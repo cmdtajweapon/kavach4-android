@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Microphone access for the on-device speech recognizer. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Network access: used only for the AdMob banner and, on some
+         Android versions, the system speech-recognition service. The
+         KAVACH knowledge base itself never requires internet. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- Declares that the app can run fine without a microphone present
+         (e.g. some tablets) — the app must not be excluded from such
+         devices on the Play Store, so this is explicitly optional. -->
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+
+    <application
+        android:name=".KavachApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Kavach.Launch"
+        android:supportsRtl="false"
+        android:usesCleartextTraffic="false">
+
+        <!-- AdMob application ID — value is injected at build time from
+             admob.properties (see admob-config.example / README.md). -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}" />
+
+        <!-- Opt out of AdMob's optional delay-app-measurement default so
+             ad loading behaves predictably during development. -->
+        <meta-data
+            android:name="com.google.android.gms.ads.DELAY_APP_MEASUREMENT_INIT"
+            android:value="true" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|keyboardHidden|keyboard|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Kavach.Launch">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>

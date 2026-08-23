@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer signal ring -->
+    <path
+        android:pathData="M24,54 a30,30 0 1,0 60,0 a30,30 0 1,0 -60,0"
+        android:strokeColor="#F0A83A"
+        android:strokeWidth="5"
+        android:fillColor="#00000000" />
+
+    <!-- Inner filled signal lamp -->
+    <path
+        android:pathData="M44,54 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0"
+        android:fillColor="#F0A83A" />
+
+    <!-- Small ticks suggesting a speed/aspect ladder -->
+    <path
+        android:pathData="M52,20 L56,20 L56,28 L52,28 Z"
+        android:fillColor="#F0A83A" />
+    <path
+        android:pathData="M52,80 L56,80 L56,88 L52,88 Z"
+        android:fillColor="#F0A83A" />
+</vector>

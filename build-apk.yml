@@ -1,0 +1,52 @@
+name: Build KAVACH 4.0 debug APK
+
+# Builds a real, installable debug APK entirely on GitHub's servers,
+# which already have a full Android SDK preinstalled — no local
+# Android Studio / SDK install needed on your machine.
+#
+# HOW TO USE:
+#   1. Push this project to a GitHub repository (public or private).
+#   2. Go to the repo's "Actions" tab — this workflow runs
+#      automatically on every push to main, or trigger it manually
+#      from there ("Run workflow").
+#   3. When it finishes (green check), open the run, scroll to
+#      "Artifacts", and download "kavach4-debug-apk" — that's a real
+#      app-debug.apk you can install on a phone (Settings > allow
+#      install from this source, or `adb install app-debug.apk`).
+#
+# This builds the DEBUG apk only (unsigned, uses the fallback AdMob
+# test IDs unless you've committed a real admob.properties — see
+# README.md). For a signed release AAB to upload to Play Store, add
+# your keystore as GitHub Secrets and extend this workflow, or build
+# that locally with Android Studio as described in README.md.
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kavach4-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

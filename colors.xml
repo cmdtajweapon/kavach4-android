@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="kavach_void">#0A0D10</color>
+    <color name="kavach_panel">#12171C</color>
+    <color name="kavach_hairline">#232B33</color>
+    <color name="kavach_amber">#F0A83A</color>
+    <color name="kavach_maroon">#9B2C4E</color>
+    <color name="kavach_maroon_bright">#C23A63</color>
+    <color name="kavach_text">#E7EAEC</color>
+    <color name="splash_bg">#0A0D10</color>
+</resources>

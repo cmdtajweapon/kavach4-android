@@ -1,0 +1,21 @@
+# Local machine / SDK config
+local.properties
+
+# Secrets — never commit real IDs or signing credentials
+admob.properties
+keystore.properties
+*.jks
+*.keystore
+
+# Build output
+*.iml
+.gradle/
+/build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Android Studio
+.idea/
+*.log

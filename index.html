@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>KAVACH 4.0 Voice Assistant</title>
+<style>
+:root{
+  --void:#0A0D10;
+  --panel:#12171C;
+  --panel-2:#181F26;
+  --hairline:#232B33;
+  --text:#E7EAEC;
+  --text-dim:#8B96A0;
+  --text-faint:#5B6570;
+  --amber:#F0A83A;
+  --amber-dim:#5C4420;
+  --green:#33C97A;
+  --green-dim:#1B4A34;
+  --red:#E5525A;
+  --red-dim:#4A2126;
+  --maroon:#9B2C4E;
+  --maroon-bright:#C23A63;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:radial-gradient(circle at 20% 0%, #141A20 0%, var(--void) 55%);
+  color:var(--text);
+  font-family:'IBM Plex Sans','Noto Sans Devanagari',sans-serif;
+  min-height:100vh;
+  padding:0 0 4rem;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 1.5rem;}
+.hi-text{font-family:'Noto Sans Devanagari','IBM Plex Sans',sans-serif;}
+
+header{
+  border-bottom:1px solid var(--hairline);
+  padding:1.4rem 0;
+  background:linear-gradient(180deg, rgba(155,44,78,0.10), transparent);
+}
+.header-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.brandmark{display:flex;align-items:center;gap:.85rem;}
+.brand-chip{
+  width:44px;height:44px;border-radius:6px;
+  background:linear-gradient(160deg, var(--maroon-bright), var(--maroon));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;letter-spacing:.5px;
+  color:#F6DCE4;flex-shrink:0;
+}
+h1{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:30px;
+  letter-spacing:.5px;margin:0;line-height:1;color:#fff;
+}
+h1 span{color:var(--amber);}
+.tagline{font-size:13px;color:var(--text-dim);margin:.3rem 0 0;font-weight:400;}
+.doc-ref{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);
+  text-align:right;line-height:1.6;
+}
+
+.hero{
+  display:grid;grid-template-columns:340px 1fr;gap:1.5rem;
+  padding:2.2rem 0 1rem;
+}
+@media (max-width:860px){.hero{grid-template-columns:1fr;}}
+
+.mic-column{
+  display:flex;flex-direction:column;align-items:center;
+  background:var(--panel);border:1px solid var(--hairline);border-radius:14px;
+  padding:1.8rem 1.4rem;
+}
+
+.lang-toggle{display:flex;gap:6px;background:var(--void);border:1px solid var(--hairline);border-radius:20px;padding:4px;margin-bottom:1.2rem;}
+.lang-btn{
+  border:none;background:transparent;color:var(--text-dim);font-size:12.5px;font-weight:500;
+  padding:.4rem .9rem;border-radius:16px;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;
+}
+.lang-btn.active{background:var(--amber);color:var(--void);}
+
+.aspect-ladder{display:flex;gap:8px;margin-bottom:1.4rem;}
+.aspect-dot{width:11px;height:11px;border-radius:50%;background:#2A3138;transition:background .3s, box-shadow .3s;}
+.aspect-dot.on-red{background:var(--red);box-shadow:0 0 10px 1px rgba(229,82,90,.65);}
+.aspect-dot.on-amber{background:var(--amber);box-shadow:0 0 10px 1px rgba(240,168,58,.65);}
+.aspect-dot.on-green{background:var(--green);box-shadow:0 0 10px 1px rgba(51,201,122,.65);}
+
+.mic-btn{
+  width:150px;height:150px;border-radius:50%;
+  border:2px solid var(--red);background:radial-gradient(circle at 35% 30%, #2A1418, #170B0D);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;transition:border-color .3s, box-shadow .3s;
+  flex-shrink:0;
+}
+.mic-btn:focus-visible{outline:2px solid #fff;outline-offset:4px;}
+.mic-btn::before{
+  content:"";position:absolute;inset:-10px;border-radius:50%;
+  border:1px solid var(--red);opacity:.35;
+}
+.mic-btn.listening{border-color:var(--amber);box-shadow:0 0 30px 4px rgba(240,168,58,.35);}
+.mic-btn.listening::before{border-color:var(--amber);animation:pulse 1.4s ease-out infinite;}
+.mic-btn.speaking{border-color:var(--green);box-shadow:0 0 30px 4px rgba(51,201,122,.35);}
+.mic-btn.speaking::before{border-color:var(--green);animation:pulse 1.4s ease-out infinite;}
+@keyframes pulse{
+  0%{transform:scale(1);opacity:.5;}
+  100%{transform:scale(1.35);opacity:0;}
+}
+@media (prefers-reduced-motion: reduce){.mic-btn::before{animation:none !important;}}
+
+.mic-icon{width:46px;height:46px;stroke:var(--text);fill:none;stroke-width:1.6;transition:stroke .3s;}
+.mic-btn.listening .mic-icon{stroke:var(--amber);}
+.mic-btn.speaking .mic-icon{stroke:var(--green);}
+
+.mic-state{
+  margin-top:1rem;font-family:'Rajdhani',sans-serif;font-weight:600;
+  font-size:15px;letter-spacing:1px;text-transform:uppercase;color:var(--text-dim);
+}
+.mic-hint{font-size:12.5px;color:var(--text-faint);margin-top:.3rem;text-align:center;line-height:1.5;}
+
+.voice-row{display:flex;align-items:center;gap:.5rem;margin-top:1rem;width:100%;}
+.voice-row label{font-size:11px;color:var(--text-faint);white-space:nowrap;}
+.voice-row select{
+  flex:1;background:var(--void);border:1px solid var(--hairline);border-radius:6px;
+  color:var(--text-dim);font-size:12px;padding:.35rem .4rem;
+}
+
+.transcript-box{
+  width:100%;margin-top:1.1rem;padding:.7rem .85rem;
+  background:var(--void);border:1px solid var(--hairline);border-radius:8px;
+  font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-dim);
+  min-height:38px;
+}
+.type-row{width:100%;display:flex;gap:.5rem;margin-top:.9rem;}
+.type-row input{
+  flex:1;background:var(--void);border:1px solid var(--hairline);border-radius:6px;
+  padding:.55rem .7rem;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;
+}
+.type-row input:focus{outline:none;border-color:var(--amber);}
+.type-row button{
+  background:var(--panel-2);border:1px solid var(--hairline);border-radius:6px;
+  color:var(--text-dim);padding:.55rem .9rem;font-size:13px;cursor:pointer;
+}
+.type-row button:hover{border-color:var(--amber);color:var(--amber);}
+
+.dmi-panel{
+  background:var(--panel);border:1px solid var(--hairline);border-radius:14px;
+  padding:1.6rem 1.7rem;display:flex;flex-direction:column;min-height:420px;
+}
+.dmi-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;border-bottom:1px solid var(--hairline);padding-bottom:1rem;}
+.dmi-topic-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1.5px;}
+.dmi-topic-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:26px;color:#fff;margin:.15rem 0 0;line-height:1.1;}
+.dmi-topic-name.hi-text{font-family:'Noto Sans Devanagari',sans-serif;font-weight:600;font-size:22px;}
+.mode-badge{
+  font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--void);
+  background:var(--amber);border-radius:4px;padding:.3rem .6rem;font-weight:600;white-space:nowrap;
+}
+.speak-controls{display:flex;gap:.5rem;}
+.icon-btn{
+  width:34px;height:34px;border-radius:6px;background:var(--panel-2);border:1px solid var(--hairline);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-dim);
+}
+.icon-btn:hover{border-color:var(--amber);color:var(--amber);}
+.icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;}
+
+.dmi-summary{font-size:14.5px;color:var(--text-dim);margin:1rem 0 1.1rem;line-height:1.65;}
+.dmi-points{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.65rem;flex:1;}
+.dmi-points li{
+  display:flex;gap:.65rem;font-size:14px;line-height:1.55;color:var(--text);
+}
+.dmi-points li::before{
+  content:"";flex-shrink:0;width:6px;height:6px;border-radius:1px;background:var(--amber);margin-top:.55rem;
+}
+.dmi-empty{margin:auto;text-align:center;color:var(--text-faint);}
+.dmi-empty svg{width:38px;height:38px;stroke:var(--text-faint);fill:none;stroke-width:1.3;margin-bottom:.8rem;}
+.dmi-empty p{font-size:13.5px;max-width:320px;margin:0 auto;line-height:1.6;}
+
+.dmi-footer{
+  margin-top:1.2rem;padding-top:.9rem;border-top:1px solid var(--hairline);
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;
+}
+.related-label{font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:1px;font-family:'IBM Plex Mono',monospace;}
+.related-chips{display:flex;gap:.4rem;flex-wrap:wrap;}
+.related-chip{
+  font-size:12px;background:var(--panel-2);border:1px solid var(--hairline);border-radius:20px;
+  padding:.3rem .7rem;color:var(--text-dim);cursor:pointer;
+}
+.related-chip:hover{border-color:var(--amber);color:var(--amber);}
+
+.topics-section{margin-top:2.6rem;}
+.section-heading{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--text-faint);margin:0 0 .9rem;
+  display:flex;align-items:center;gap:.6rem;
+}
+.section-heading::after{content:"";flex:1;height:1px;background:var(--hairline);}
+.chip-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.6rem;margin-bottom:2rem;}
+.topic-card{
+  background:var(--panel);border:1px solid var(--hairline);border-radius:10px;
+  padding:.85rem .95rem;cursor:pointer;text-align:left;color:var(--text);
+  font-family:'IBM Plex Sans',sans-serif;transition:border-color .2s, background .2s;
+}
+.topic-card:hover{border-color:var(--amber);background:var(--panel-2);}
+.topic-card.active{border-color:var(--green);background:var(--green-dim);}
+.topic-card .t-name{font-size:13.5px;font-weight:500;display:block;}
+.topic-card .t-sub{font-size:11.5px;color:var(--text-faint);display:block;margin-top:.2rem;}
+
+footer{
+  margin-top:2.5rem;padding-top:1.4rem;border-top:1px solid var(--hairline);
+  font-size:12px;color:var(--text-faint);line-height:1.7;
+}
+footer strong{color:var(--text-dim);}
+
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+.search-wrap{margin:2.4rem 0 1.4rem;}
+.search-bar{
+  display:flex;align-items:center;gap:.6rem;
+  background:var(--panel);border:1px solid var(--hairline);border-radius:10px;
+  padding:.65rem .9rem;
+}
+.search-bar svg{width:18px;height:18px;stroke:var(--text-faint);fill:none;stroke-width:1.8;flex-shrink:0;}
+.search-bar input{
+  flex:1;background:transparent;border:none;color:var(--text);font-size:14px;
+  font-family:'IBM Plex Sans',sans-serif;
+}
+.search-bar input:focus{outline:none;}
+.search-clear{
+  background:none;border:none;color:var(--text-faint);font-size:12px;cursor:pointer;
+  padding:.2rem .5rem;
+}
+.search-no-results{font-size:13px;color:var(--text-faint);padding:.6rem 0;display:none;}
+
+.footer-links{display:flex;flex-wrap:wrap;gap:1.1rem;margin-top:.9rem;}
+.footer-link{
+  background:none;border:none;color:var(--text-dim);font-size:12.5px;cursor:pointer;
+  padding:0;text-decoration:underline;text-underline-offset:2px;font-family:'IBM Plex Sans',sans-serif;
+}
+.footer-link:hover{color:var(--amber);}
+.app-version{font-size:11px;color:var(--text-faint);margin-top:.6rem;font-family:'IBM Plex Mono',monospace;}
+
+@media (max-width:520px){
+  .mic-btn{width:130px;height:130px;}
+  .mic-icon{width:40px;height:40px;}
+  .hero{padding-top:1.4rem;}
+  .wrap{padding:0 1rem;}
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div style="padding:1rem 0 0;">
+  <div style="display:inline-block;background:#fff;border-radius:8px;padding:.5rem .8rem;">
+    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAeAB4AAD/4QAiRXhpZgAATU0AKgAAAAgAAQESAAMAAAABAAEAAAAAAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAAmAJUDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9+pCFXJ6fTNNZgwAI4rkf2ifH9z8KfgJ408T2ccU134d0O91OCOT7kjwwPIqn2JUCvyf/AGM7f9sD9vL4f6h460H4+WehW66pNYG1vpTC+9ERyVijgZFT94AAMHg9O+kIXPpck4alj8PUxc60aUINK8r7u9tk+x+xct0kLjcwG44/Gnhww46HpX49/tgaZ8TfhF+1n+yVoPxD8af8JL4sXWIF1PULGZ47e9R9ajMQKhYy2ISinK/wnqOv6HftL/8ABR/4P/sf+JLLRvHvixdM1m7txcrZQWVxeziInAdxDG+wEg43YzjjNOUOiKzDhatR9h9Vl7Z1VJrlT2i2vu0ue7uPlJ7Ckc+vNeJ/Cv8A4KKfB34y/B7xD470DxrYXHhrwkpfWbiaKW3fThjI8yORVcbsELhTuIIXJBFcT8Lf+Cyv7PXxh8c6b4Z0bxy7azrV1HY2ENxpN5Al1NI4SNFd4ggLMQBuI5qeVnlLIsxtNuhK0Pi0ej31+R9RDDng4J70d/QD0r80rD/guxoq/wDBQrVNCuvEWlr8ELa3FvZ6jBpdxLPc3nlRjgqpfZ5xlXO3bhQc4IJ+mfGP/BXT4A+Adc8WaVrHjqKw1XwXdNY6naSaddeas6yNGyRL5X74hkbJj3AAZzjmnyyO/F8IZrh3TjKi25xUrJN6Pv53tf1R9KqwLfTj6U/PNfn74I/aWu/id/wVm8OjRvjY83gzX9Hi1Sy8Ctp97GZoZdHM6OXaEQqTkT4ZwR0xuBA9S8Sf8Ftf2bvCvjG90W78fZn0+dreaeDSb2e2DqcHbKkTK6/7SkqeoOOaTg0KtwzjoSjGjBzbiptJP3U76P7j6vZtoyaYzjHcc4rzn4nftT+Evhz8HbTxi16mo2GsWa3mkxW7qsmpo0YkUoXKhV2MGLsQqg5JFfJ3wg/4LM6x8XYop0+G2gWMDz+Q+3xlDeI53MmUlhhZXIZTkIGx3OCCZW9j5+SabXVH3v5gBGM80bsZ7D1r85P23P22/iX478VfCbwz4J1GPwFdeOQyXLR3K3G2c3r2iqZ/L3CNWjLblVSd2COMH0L4QfCf4/8AwI8WweMPiJ8ZNI1nwF4cgn1DW7ZC88kltHBIzEfuAx24DYBydvfpWCr3bjZ6HwlTjeP9p1Muo4aU1TkoymmlFXV76u+h9tRuCcdfen145o37dPw01v4Ean8S7TXZH8GaNcraXV79huFMUpeNAvlmMSH5pYxkLj5vQGovFv8AwUD+FHgf4S6D421TxRHaaD4n3/2W72k/nXmw4fbCE8zCnqSoAyPUZ054pXufRviDLYx5nWily82/2b2T9Gz2aVgkZJxgDPNNilWZcoQwr5d8d/t6/DX9pb9nP4oaf4H8Ttdazp/hTUbswNbT2lwkYt3HmoJFQsASvKngkZxXOf8ABEbVbvV/2QrqW8up7qQa9cjdLIzkfu4eMkk469T3qVVTkoo8unxZha+ZUsBhWpqpGUuZO6XK0mvxPsTzMAZHPsKKUDA4ycUVrqfVWb2Z5p+2zbvd/sd/FSONGlkfwjqqqiruLE2cvAHcmvw0/Yk+A37N/wATPhlc6h8W/i14g8DeJY9Skt49Psk+SW28uNkkz5EmdzFwcH+AZA4r+ha6tkvLd4pUSSOQFWVhlWB6givnO/8A+CSP7O+o6xPfSfCnwwJrly8iIsiRZPpGG2KPZVFaQnZWZ99wpxVQy3B1sJW54+0cXzQ5b6X097vc/O39urxp4D8P/Gv9jfWfCvif+2fhx4XWzsrfXrklFkg0/UbeKaSQlUG5REd2FHTgYxWP+1749vof+C1OueIPDuufDKJL/T7OXRdV8ZzB/D7QNpMA3iUZUZPmhGB27iRnLV+qvib/AIJ+/B3xj8MdE8G6l8PvDtx4a8OSSzabZiAotk0r75SjKQy725YZwxAJzgVm+OP+CafwR+JOh+H9P1v4d6De2/heyXTtMyJEe1tlJKxb1YMyAkkBicEn1JqlVVz3cu47y7DKHNTm+WFSnryu8Zy5lK2mvdban5U6/wDszTfCP/gnv+0Lrlr8Rfht431XxHqehXGqaf4H1Fb+00q2+3yshcqF2hpXO1AuFEZ5OcD7Z/4JqfFj9myz/ZW+Eumy618KYfG5sbSFrS6msl1Y6juC/dbEvmtN91sZJIwelfS/wr/YU+E/wU8Fa/4f8M+BdB07SfFMIg1i2MRmXU41DBUmMm4uAHfhicb29a5jwH/wSu+Afw18XWGvaN8NdBtdX0q4S7tJ3Ms3kTIQUkCu5XcpAIOMgjPXmk5rocma8Z4TMaFShiZVLufMnFRV/cUbSV7WVul9D4L8O2/gj4bf8HBvjKy8TQeHdF8PXNosNpFfwxQWfnSabaNGF3ARgswbb3LcZycVR/Yc/Z18EftHf8Fh/wBoKx8ceHdO8T2GlX2sXlta38fmQRynUkTcUPBwrEDORyenFfpP8ZP2EPhP8ffHdn4o8WeB9E1jxDZKiR6hIjJPhCCgZlI3bT03ZxWt8Of2Sfh58JPinrvjfw74XsNM8VeJzI2qajE8hkvDJIJXJDMVGXAbgDmjnViMRxzSnh37NTVR0Y0r32cWnzLrqtGfmT8QvCa+D/8AgvLc6F4VtU09NN8Iz2Gj2tpGFFqF8OSLDHGB2GFwB7e9J/wQr+JHwK8EfAHxjb/E3VPhtpfiJvEBkj/4SR7VLh7X7NFsEZn5ZQ4mOAThmbIG4Z/TaT9kf4fT/H1Pik/hmxPxAWPyf7Z3P5+zyTBjG7b/AKolfu9K4Hxb/wAEpfgB438X3Wu6l8MvD0+pX87XVzIpljSWVjuLGNXCctz93rn1NJTVjWpxpgsRglgsQpx/d0ouUbc3NT5r9dnf1PDfCv7GHjP9qv42aDq3jyXw/qXwoto4tThbRryOTSPEVoE3WWn28K/MliMxySLIAsnlgEyiU7PqT4jfsXfDb4qeJk1nWvDMMuopGkJltru4shIqDC70gkRXYDADMCQFUZwAB6J4W8KWHgrw/p+k6TZWunaXpcCWtpa20YjhtokUIkaKOFVVAAHQACr5Q4wMVn1PzCq1KTts++//AA5+XX/BUD4H6JqH7ZPwZ8A2aTaVompW9tpY+zuWliSa/dXcM24mQlyxZsksSSTk17JL/wAEwPC/7Jfwd+JniXw7r/inVtVu/BerWIgvXheHEkBbcFSNW3ZRQPm7mvqbx9+zP4K+KHxC0XxXr2g2mo+IPDrI+nXkjPvtSknmLgAgcPzyDXaz6el1A8MqRyQyqUdGGVdSMEEHsfSuaNBKUpdT83o8A4eWYYvMcUlKdV3g9bx91L08z8gvhv8AGLwxpf8AwR98deEZ9d0yHxLqWuxPa6W9wv2yZftFnJuEf3iu1HO7GPlIzkVy3xcnv9L8FfsxXavpcVsunE20mrlv7OEq6iS3n4yRCB5Zk4Py9jgAfqBYf8E5fgtpY1Pyfh14b/4m6NHcK8BZQrNuIQEkRDOP9WF6D0rc8UfsW/DPxp8MtK8H6n4Q0m78PaEWOn2rhv8ARNxJbY+d6gknIBwe9Y/Vpv4n0sfFVfC/OK9D2dWtBOFKNONubXlnz+969bH5++A/ghNr3jX4sePtT+Ifwi1nW9S8F6ukOh+CtSE5lY2flF/KGNihQCfvFmbORzn3D/ghd400i9/Zq1TQU1KzbWbTWZ7iWx85ftCRMkQWXZnOwnjd0yCM5BFfR/wn/Yo+GPwN16bVPC3g/StL1C4ga2kuAGkkMTYLJlycA4HAq78Jv2RPh18DPFt7rnhLwrpeg6pqMRguJrRWTfGWD7AudqruAOAABitadBxadz6Hh3gPGZZjaGLjyrl9pzq8nfns7pvrptseiltp6j8aKcI8k5wR2orpufrDix1FFFBYUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQB/9k=" alt="Company logo" style="display:block;height:28px;width:auto;">
+  </div>
+</div>
+
+<header>
+  <div class="header-row">
+    <div class="brandmark">
+      <div class="brand-chip">K4</div>
+      <div>
+        <h1>KAVACH <span>4.0</span></h1>
+        <p class="tagline" id="taglineText">Voice reference assistant for loco pilots</p>
+      </div>
+    </div>
+    <div class="doc-ref">
+      Source: Loco KAVACH Reference Guide, Doc 5 16 75 0056, v1.1<br>
+      Cross-checked against RDSO/SPN/196/2020 v4.0
+    </div>
+  </div>
+</header>
+
+<h2 class="sr-only">A bilingual voice and text assistant that answers questions about KAVACH 4.0 subsystems, startup procedure, operating modes, SOS handling, collision scenarios and safety rules for loco pilots, in English and Hindi.</h2>
+
+<div class="hero">
+  <div class="mic-column">
+    <div class="lang-toggle" role="group" aria-label="Choose language">
+      <button class="lang-btn active" id="langEnBtn">English</button>
+      <button class="lang-btn" id="langHiBtn">हिंदी</button>
+    </div>
+
+    <div class="aspect-ladder" id="aspectLadder">
+      <div class="aspect-dot" id="dotRed"></div>
+      <div class="aspect-dot" id="dotAmber"></div>
+      <div class="aspect-dot" id="dotGreen"></div>
+    </div>
+
+    <button class="mic-btn" id="micBtn" aria-label="Press and ask about any KAVACH mode or system">
+      <svg class="mic-icon" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+    </button>
+
+    <div class="mic-state" id="micState">Tap to ask</div>
+    <div class="mic-hint" id="micHint">Say a mode or system name — "Standby mode", "Trip mode", "How does SOS work", "Brake Interface Unit"</div>
+
+    <div class="transcript-box" id="transcriptBox">Heard: —</div>
+
+    <div class="type-row">
+      <input type="text" id="typeInput" placeholder="Or type: e.g. limited supervision" aria-label="Type a KAVACH question">
+      <button id="askBtn">Ask</button>
+    </div>
+
+    <div class="voice-row" id="voiceRow" style="display:none;">
+      <label for="voiceSelect">Voice</label>
+      <select id="voiceSelect"></select>
+    </div>
+  </div>
+
+  <div class="dmi-panel" id="dmiPanel">
+    <div id="dmiEmpty" class="dmi-empty">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="8" cy="10" r="1.4"/><circle cx="12" cy="10" r="1.4"/><circle cx="16" cy="10" r="1.4"/><line x1="7" y1="15" x2="17" y2="15"/></svg>
+      <p id="dmiEmptyText">Ask about a subsystem, the startup sequence, an operating mode, SOS handling, a collision scenario, or the do's and don'ts — this panel reads back like the loco DMI context display.</p>
+    </div>
+    <div id="dmiContent" style="display:none;height:100%;flex-direction:column;">
+      <div class="dmi-top">
+        <div>
+          <div class="dmi-topic-eyebrow" id="dmiEyebrow">MODE</div>
+          <div class="dmi-topic-name" id="dmiName">—</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <span class="mode-badge" id="dmiBadge">—</span>
+          <div class="speak-controls">
+            <button class="icon-btn" id="replayBtn" aria-label="Read this aloud again">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button class="icon-btn" id="stopBtn" aria-label="Stop reading">
+              <svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <p class="dmi-summary" id="dmiSummary"></p>
+      <ul class="dmi-points" id="dmiPoints"></ul>
+      <div class="dmi-footer">
+        <span class="related-label" id="relatedLabel">Related</span>
+        <div class="related-chips" id="relatedChips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <div class="search-bar">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search KAVACH topics" aria-label="Search KAVACH topics">
+    <button class="search-clear" id="searchClearBtn" style="display:none;">Clear</button>
+  </div>
+  <div class="search-no-results" id="searchNoResults">No matching topics.</div>
+</div>
+
+<div class="topics-section">
+  <div class="section-heading" id="headSubsystems">Subsystems</div>
+  <div class="chip-grid" id="gridSubsystems"></div>
+
+  <div class="section-heading" id="headStartup">Startup &amp; configuration</div>
+  <div class="chip-grid" id="gridStartup"></div>
+
+  <div class="section-heading" id="headModes">Operating modes</div>
+  <div class="chip-grid" id="gridModes"></div>
+
+  <div class="section-heading" id="headSos">SOS &amp; collision</div>
+  <div class="chip-grid" id="gridSos"></div>
+
+  <div class="section-heading" id="headRules">Rules</div>
+  <div class="chip-grid" id="gridRules"></div>
+</div>
+
+<footer id="footerText">
+  <strong>Training aid, not the authority.</strong> Content is drawn from the HBL Loco KAVACH 4.0 Reference Guide (Doc 5 16 75 0056) and cross-checked against RDSO/SPN/196/2020 v4.0. Always follow your zonal railway's G&amp;SR, official KAVACH user manual, and current OEM instructions — this tool is for learning and quick recall only, not for operational decisions.
+  <div class="footer-links">
+    <button class="footer-link" id="shareLink">Share app</button>
+    <button class="footer-link" id="rateLink">Rate app</button>
+    <button class="footer-link" id="aboutLink">About</button>
+    <button class="footer-link" id="privacyLink">Privacy policy</button>
+  </div>
+  <div class="app-version" id="appVersionLine"></div>
+</footer>
+
+</div>
+<script>
+const KB = {
+  vitalComputer:{ group:"subsystems", badge:"SUBSYSTEM", name:"Loco Vital Computer",
+    summary:"The primary processing unit of Loco KAVACH — it runs the safety logic that everything else depends on.",
+    points:[
+      "Primary processing unit of KAVACH. It executes safety logic and handles communication.",
+      "Monitors speed, braking, signal aspects, and train positioning in real time.",
+      "Interfaces directly with the BIU, RFID reader, GPS, and the DMI."
+    ], aliases:["vital computer","loco vital computer","processing unit","central unit","brain of kavach"],
+    hiAliases:["वाइटल कंप्यूटर","लोको वाइटल कंप्यूटर"],
+    hi:{ name:"लोको वाइटल कंप्यूटर",
+      summary:"KAVACH की मुख्य प्रोसेसिंग यूनिट — यही वह दिमाग है जिस पर बाकी सब कुछ निर्भर करता है।",
+      points:[
+        "यह KAVACH की मुख्य प्रोसेसिंग यूनिट है। यह सेफ्टी लॉजिक और कम्युनिकेशन को संभालती है।",
+        "यह स्पीड, ब्रेकिंग, सिग्नल एस्पेक्ट और ट्रेन की पोजीशन को रियल टाइम में मॉनिटर करती है।",
+        "यह सीधे BIU, RFID रीडर, GPS और DMI से जुड़ी होती है।"
+      ] } },
+
+  dmi:{ group:"subsystems", badge:"SUBSYSTEM", name:"Driver Machine Interface (DMI / LP-OCIP)",
+    summary:"Your window into KAVACH. The LP-OCIP is where you read status and enter commands.",
+    points:[
+      "Provides real-time alerts, warnings, and operational status to the loco pilot.",
+      "Displays signal aspects, braking status, and system faults.",
+      "The LP-OCIP is the physical interface where the loco pilot enters inputs and confirms actions.",
+      "Key fields include current speed, permit speed (light green), target speed (dark green), target type and distance, deceleration constant, brake-applied indicator, context messages, train length, loco location, mode name and symbol, RF signal strength, RFID tag indication, signal aspect, and movement authority.",
+      "Overspeed makes the speed field and needle turn red with an audio buzzer to alert you."
+    ], aliases:["dmi","driver machine interface","lp-ocip","lp ocip","screen","display","ocip"],
+    hiAliases:["डीएमआई","ड्राइवर मशीन इंटरफेस","एलपी ओसीआईपी"],
+    hi:{ name:"ड्राइवर मशीन इंटरफेस (DMI / LP-OCIP)",
+      summary:"यही आपकी खिड़की है KAVACH में — LP-OCIP से आप स्टेटस पढ़ते हैं और कमांड देते हैं।",
+      points:[
+        "यह लोको पायलट को रियल टाइम अलर्ट, वार्निंग और ऑपरेशनल स्टेटस देता है।",
+        "यह सिग्नल एस्पेक्ट, ब्रेकिंग स्टेटस और सिस्टम फॉल्ट दिखाता है।",
+        "LP-OCIP वह फिजिकल इंटरफेस है जहाँ लोको पायलट इनपुट देता है और कमांड कन्फर्म करता है।",
+        "मुख्य फील्ड्स में करंट स्पीड, परमिट स्पीड (हल्का हरा), टारगेट स्पीड (गहरा हरा), टारगेट टाइप और डिस्टेंस, डिसेलरेशन कॉन्स्टेंट, ब्रेक-अप्लाइड इंडिकेटर, कॉन्टेक्स्ट मैसेज, ट्रेन लेंथ, लोको लोकेशन, मोड नेम और सिंबल, RF सिग्नल स्ट्रेंथ, RFID टैग इंडिकेशन, सिग्नल एस्पेक्ट और मूवमेंट अथॉरिटी शामिल हैं।",
+        "ओवरस्पीड होने पर स्पीड फील्ड और नीडल लाल हो जाती है और बजर बजता है, आपको अलर्ट करने के लिए।"
+      ] } },
+
+  biu:{ group:"subsystems", badge:"SUBSYSTEM", name:"Brake Interface Unit (BIU)",
+    summary:"When KAVACH decides it must brake, this is the unit that actually pulls the brakes.",
+    points:[
+      "Automatically applies brakes if overspeeding or a signal violation is detected.",
+      "IRAB braking uses the HBL BIU.",
+      "E-70 locos, from Faively Transport, use an OEM BIU.",
+      "CCB locos, from Knorr Bremse, use an OEM BIU.",
+      "The BIU has a rotary switch with SERVICE and ISOLATION positions — SERVICE for normal running, ISOLATION when KAVACH must be taken out of the brake loop."
+    ], aliases:["biu","brake interface unit","irab","ccb","e-70","e70","rib","knorr bremse","faively"],
+    hiAliases:["ब्रेक इंटरफेस यूनिट","बीआईयू"],
+    hi:{ name:"ब्रेक इंटरफेस यूनिट (BIU)",
+      summary:"जब KAVACH को ब्रेक लगाने का फैसला लेना पड़ता है, तो असल में यही यूनिट ब्रेक खींचती है।",
+      points:[
+        "ओवरस्पीडिंग या सिग्नल वायलेशन डिटेक्ट होने पर यह ऑटोमैटिक ब्रेक लगाती है।",
+        "IRAB ब्रेकिंग में HBL का BIU इस्तेमाल होता है।",
+        "E-70 लोकोमोटिव में Faively Transport का OEM BIU इस्तेमाल होता है।",
+        "CCB लोकोमोटिव में Knorr Bremse का OEM BIU इस्तेमाल होता है।",
+        "BIU में एक रोटरी स्विच होता है जिसमें SERVICE और ISOLATION पोजीशन होती हैं — नॉर्मल रनिंग के लिए SERVICE, और जब KAVACH को ब्रेक लूप से बाहर करना हो तब ISOLATION।"
+      ] } },
+
+  rfid:{ group:"subsystems", badge:"SUBSYSTEM", name:"RFID Reader",
+    summary:"KAVACH's sense of location — it reads trackside tags to know exactly where the train is.",
+    points:[
+      "Reads trackside RFID tags to determine location, direction, and upcoming signal aspects.",
+      "Works in real time to assist KAVACH's decision-making.",
+      "Three consecutive missed tags is one of the conditions that pushes KAVACH back to Staff Responsible mode.",
+      "The DMI shows the status of the last three tags read — green for successfully read, red for missed."
+    ], aliases:["rfid","rfid reader","tag reader","trackside tag"],
+    hiAliases:["आरएफआईडी","आरएफआईडी रीडर"],
+    hi:{ name:"RFID रीडर",
+      summary:"यह KAVACH की लोकेशन सेंस है — ट्रैक साइड टैग पढ़कर पता चलता है ट्रेन कहाँ है।",
+      points:[
+        "ट्रैकसाइड RFID टैग पढ़कर लोकेशन, डायरेक्शन और आने वाले सिग्नल एस्पेक्ट का पता लगाता है।",
+        "यह रियल टाइम में KAVACH के डिसीजन-मेकिंग में मदद करता है।",
+        "लगातार तीन RFID टैग मिस होना एक ऐसी कंडीशन है जिससे KAVACH वापस स्टाफ रिस्पॉन्सिबल मोड में चला जाता है।",
+        "DMI पर पिछले तीन टैग की स्टेटस दिखती है — हरा यानी सही पढ़ा गया, लाल यानी मिस हुआ।"
+      ] } },
+
+  speedometer:{ group:"subsystems", badge:"SUBSYSTEM", name:"Speedometer",
+    summary:"Feeds KAVACH the real-time speed it needs to enforce every limit.",
+    points:[
+      "Displays the current train speed in real time.",
+      "Integrated with KAVACH to enforce speed restrictions.",
+      "Triggers auto-braking automatically if the enforced limit is exceeded."
+    ], aliases:["speedometer","speed sensor","speed unit"],
+    hiAliases:["स्पीडोमीटर"],
+    hi:{ name:"स्पीडोमीटर",
+      summary:"KAVACH को रियल टाइम स्पीड बताने का काम यही करता है, ताकि हर लिमिट लागू हो सके।",
+      points:[
+        "ट्रेन की करंट स्पीड रियल टाइम में दिखाता है।",
+        "यह KAVACH के साथ इंटीग्रेटेड है ताकि स्पीड रिस्ट्रिक्शन लागू हो सकें।",
+        "अगर तय लिमिट पार होती है, तो यह ऑटोमैटिक ब्रेकिंग ट्रिगर करता है।"
+      ] } },
+
+  gpsGsm:{ group:"subsystems", badge:"SUBSYSTEM", name:"GPS cum GSM Antenna",
+    summary:"Keeps KAVACH's timing and communication honest, with built-in redundancy.",
+    points:[
+      "Provides time synchronization for KAVACH communication.",
+      "Logs real-time events.",
+      "Dual GPS-cum-GSM modems provide redundancy.",
+      "Faults are detected within three cycles, with automatic recovery."
+    ], aliases:["gps","gsm","antenna","gps antenna","gps gsm"],
+    hiAliases:["जीपीएस","जीएसएम","एंटीना"],
+    hi:{ name:"GPS कम GSM एंटीना",
+      summary:"KAVACH की टाइमिंग और कम्युनिकेशन को सही रखता है, साथ ही रिडंडेंसी भी देता है।",
+      points:[
+        "KAVACH कम्युनिकेशन के लिए टाइम सिंक्रोनाइजेशन देता है।",
+        "रियल टाइम इवेंट्स को लॉग करता है।",
+        "दो GPS-कम-GSM मॉडेम रिडंडेंसी के लिए होते हैं।",
+        "फॉल्ट तीन साइकिल के अंदर डिटेक्ट हो जाता है, और ऑटोमैटिक रिकवरी होती है।"
+      ] } },
+
+  startup:{ group:"startup", badge:"PROCEDURE", name:"Startup procedure — overview",
+    summary:"The universal sequence before every mission, regardless of BIU type.",
+    points:[
+      "Switch on both the KAVACH and BIU MCBs in the MCB EMI Filter Box — BIU MCB first, then the KAVACH MCB.",
+      "Change the BIU's isolation switch from ISOLATION to SERVICE position.",
+      "Open the EM cock, below the A9 handle, in both cabs.",
+      "In the active cab, set the Leading / Non-Leading switch on the LP-OCIP to LEADING.",
+      "KAVACH runs an A9 brake test in three stages: Normal Service Brake, Full Service Brake, then Emergency Brake, watching brake pipe pressure drop each time.",
+      "KAVACH then runs an SA9 test, with the SA9 handle in RELEASE, checking that brake cylinder pressure rises from zero to about 3.5 kilograms per square centimetre.",
+      "On success, 'Brake Testing Success' appears on the LP-OCIP.",
+      "The system then prompts for train configuration, followed by a choice of Staff Responsible or Shunt mode.",
+      "Exact MCB names and cock positions differ slightly between E-70, CCB, IRAB, and Vande Bharath sets — the shutdown sequence is the same steps in reverse."
+    ], aliases:["startup","start up","switch on","power on","energization","turn on","boot up","initial energization"],
+    hiAliases:["स्टार्टअप","स्टार्ट अप","स्विच ऑन","पावर ऑन"],
+    hi:{ name:"स्टार्टअप प्रोसीजर — ओवरव्यू",
+      summary:"हर मिशन से पहले की यूनिवर्सल सीक्वेंस, चाहे BIU किसी भी टाइप का हो।",
+      points:[
+        "MCB EMI फिल्टर बॉक्स में KAVACH और BIU दोनों MCB ऑन करें — पहले BIU MCB, फिर KAVACH MCB।",
+        "BIU के आइसोलेशन स्विच को ISOLATION से SERVICE पोजीशन में बदलें।",
+        "दोनों कैब में A9 हैंडल के नीचे वाला EM कॉक खोलें।",
+        "एक्टिव कैब में, LP-OCIP पर Leading / Non-Leading स्विच को LEADING पर सेट करें।",
+        "KAVACH तीन स्टेज में A9 ब्रेक टेस्ट करता है — नॉर्मल सर्विस ब्रेक, फुल सर्विस ब्रेक, फिर इमरजेंसी ब्रेक — हर बार ब्रेक पाइप प्रेशर ड्रॉप चेक करते हुए।",
+        "इसके बाद KAVACH SA9 टेस्ट करता है, SA9 हैंडल RELEASE पोजीशन में रखकर, यह चेक करते हुए कि ब्रेक सिलेंडर प्रेशर 0 से लगभग 3.5 किलोग्राम प्रति वर्ग सेंटीमीटर तक बढ़े।",
+        "सफल होने पर LP-OCIP पर 'Brake Testing Success' मैसेज आता है।",
+        "इसके बाद सिस्टम ट्रेन कॉन्फ़िगरेशन मांगता है, फिर स्टाफ रिस्पॉन्सिबल या शंट मोड चुनने को कहता है।",
+        "E-70, CCB, IRAB और वंदे भारत सेट के बीच MCB के नाम और कॉक पोजीशन में थोड़ा फर्क होता है — शटडाउन सीक्वेंस यही स्टेप्स उल्टे क्रम में होते हैं।"
+      ] } },
+
+  trainConfig:{ group:"startup", badge:"PROCEDURE", name:"Train configuration",
+    summary:"How to tell KAVACH what train you're driving, right after brake testing succeeds.",
+    points:[
+      "Press CONFIG, then CNFM on the LP-OCIP to enter configuration mode.",
+      "Select the loco configuration: Light Engine, Goods or Freight Train, Passenger Train ICF, Passenger Train LHB, EMU, Train Set, or Parcel.",
+      "Use the up and down keys to choose, then ENTER to confirm.",
+      "Enter the number of coaches — the soft key '+' adds one coach, '++' adds five — then press Enter.",
+      "The system calculates train length and shows the brake efficiency range, 85 to 100 percent.",
+      "Once brake testing succeeds, select SR or SHNT mode, then CNFM to confirm.",
+      "Both train type and mode then display on the LP-OCIP."
+    ], aliases:["configuration","train configuration","config","select train type","coaches","light engine","passenger train"],
+    hiAliases:["ट्रेन कॉन्फ़िगरेशन","कॉन्फ़िगरेशन"],
+    hi:{ name:"ट्रेन कॉन्फ़िगरेशन",
+      summary:"ब्रेक टेस्टिंग सफल होने के तुरंत बाद, KAVACH को अपनी ट्रेन के बारे में कैसे बताएं।",
+      points:[
+        "कॉन्फ़िगरेशन मोड में जाने के लिए LP-OCIP पर CONFIG दबाएं, फिर CNFM।",
+        "लोको कॉन्फ़िगरेशन चुनें: Light Engine, Goods या Freight Train, Passenger Train ICF, Passenger Train LHB, EMU, Train Set, या Parcel।",
+        "ऊपर-नीचे कीज़ से चुनें, फिर ENTER दबाकर कन्फर्म करें।",
+        "कोच की संख्या डालें — सॉफ्ट की '+' से एक कोच बढ़ता है, '++' से पांच कोच — फिर Enter दबाएं।",
+        "सिस्टम ट्रेन लेंथ कैलकुलेट करता है और ब्रेक एफिशिएंसी रेंज दिखाता है, 85 से 100 प्रतिशत।",
+        "ब्रेक टेस्टिंग सफल होने के बाद, SR या SHNT मोड चुनें, फिर कन्फर्म करने के लिए CNFM दबाएं।",
+        "ट्रेन टाइप और मोड दोनों LP-OCIP पर दिखने लगते हैं।"
+      ] } },
+
+  standby:{ group:"modes", badge:"MODE · SB", name:"Standby (SB) Mode",
+    summary:"The default mode. You never select it yourself — KAVACH starts here and waits.",
+    points:[
+      "This is the default mode and cannot be selected by the loco pilot.",
+      "The system enters Standby when it turns on and completes self-tests, or when no cab is occupied or the EM cock is closed.",
+      "In this mode, the loco pilot can only interact when the desk is open.",
+      "The system monitors for train standstill, showing both train speed and permitted speed as zero.",
+      "If any movement is detected, KAVACH applies the Emergency Brake."
+    ], aliases:["standby","stand by","sb mode","default mode"],
+    hiAliases:["स्टैंडबाय","स्टैंड बाय"],
+    hi:{ name:"स्टैंडबाय (SB) मोड",
+      summary:"डिफॉल्ट मोड। इसे आप खुद कभी सिलेक्ट नहीं करते — KAVACH यहीं से शुरू होता है और इंतज़ार करता है।",
+      points:[
+        "यह डिफॉल्ट मोड है और लोको पायलट इसे सिलेक्ट नहीं कर सकता।",
+        "सिस्टम स्टैंडबाय में तब आता है जब यह ऑन होकर सेल्फ-टेस्ट पूरा करता है, या जब कोई कैब ऑक्युपाइड न हो या EM कॉक बंद हो।",
+        "इस मोड में, लोको पायलट सिर्फ तभी इंटरैक्ट कर सकता है जब डेस्क खुला हो।",
+        "सिस्टम ट्रेन के स्टैंडस्टिल को मॉनिटर करता है, ट्रेन स्पीड और परमिटेड स्पीड दोनों को ज़ीरो दिखाते हुए।",
+        "अगर कोई मूवमेंट डिटेक्ट होता है, तो KAVACH इमरजेंसी ब्रेक लगा देता है।"
+      ] } },
+
+  shunt:{ group:"modes", badge:"MODE · SHNT", name:"Shunt (SHNT) Mode",
+    summary:"For yard movements at low speed — selected manually, and KAVACH doesn't watch shunt signals.",
+    points:[
+      "Selected manually by the loco pilot only when the train is at standstill.",
+      "Can be selected from Standby, SR, Limited Supervision, or Full Supervision by pressing SHNT then CNFM.",
+      "Onboard KAVACH supervises shunting speed, default 15 kmph.",
+      "KAVACH does not monitor shunt signals, so it cannot supervise passing them at danger — that responsibility stays with you.",
+      "If the train exceeds the block section limit, Stationary KAVACH generates an SOS signal."
+    ], aliases:["shunt","shunting","shnt mode"],
+    hiAliases:["शंट","शंटिंग"],
+    hi:{ name:"शंट (SHNT) मोड",
+      summary:"यार्ड में धीमी स्पीड पर मूवमेंट के लिए — मैनुअली सिलेक्ट होता है, और KAVACH शंट सिग्नल नहीं देखता।",
+      points:[
+        "यह सिर्फ लोको पायलट द्वारा मैनुअली सिलेक्ट होता है, और सिर्फ तब जब ट्रेन स्टैंडस्टिल में हो।",
+        "Standby, SR, Limited Supervision या Full Supervision से SHNT दबाकर, फिर CNFM से सिलेक्ट किया जा सकता है।",
+        "ऑनबोर्ड KAVACH शंटिंग स्पीड को सुपरवाइज़ करता है, डिफॉल्ट 15 किलोमीटर प्रति घंटा।",
+        "KAVACH शंट सिग्नल मॉनिटर नहीं करता, इसलिए डेंजर पर शंट सिग्नल पास करने की सुपरविजन नहीं कर सकता — यह जिम्मेदारी आपकी रहती है।",
+        "अगर ट्रेन ब्लॉक सेक्शन लिमिट पार करती है, तो स्टेशनरी KAVACH SOS सिग्नल जनरेट करता है।"
+      ] } },
+
+  staffResponsible:{ group:"modes", badge:"MODE · SR", name:"Staff Responsible (SR) Mode",
+    summary:"You're driving under your own responsibility within KAVACH territory — the fallback whenever KAVACH loses its picture of the train.",
+    points:[
+      "Selected manually by pressing SR then CNFM, only at the start of a mission.",
+      "In this mode the loco pilot operates the train under their own responsibility within KAVACH territory.",
+      "The train can still send and receive emergency stop signals, as long as its ID, direction, and location are known.",
+      "KAVACH automatically enters SR mode on loss of radio communication in a communication-mandatory zone, on three consecutive missed RFID tags, when train direction is unknown, or when a KAVACH-territory exit tag is read.",
+      "From SR mode, KAVACH transitions automatically to On Sight mode once two RFID tags are detected sequentially and RF communication is established with the station or level-crossing KAVACH."
+    ], aliases:["staff responsible","sr mode","staff responsible mode"],
+    hiAliases:["स्टाफ रिस्पॉन्सिबल","एसआर मोड"],
+    hi:{ name:"स्टाफ रिस्पॉन्सिबल (SR) मोड",
+      summary:"आप KAVACH टेरिटरी के अंदर अपनी खुद की जिम्मेदारी पर ट्रेन चला रहे हैं — जब भी KAVACH ट्रेन की तस्वीर खो देता है, यही फॉलबैक होता है।",
+      points:[
+        "SR दबाकर फिर CNFM से मैनुअली सिलेक्ट किया जाता है, सिर्फ मिशन की शुरुआत में।",
+        "इस मोड में लोको पायलट KAVACH टेरिटरी के अंदर अपनी जिम्मेदारी पर ट्रेन चलाता है।",
+        "ट्रेन तब भी इमरजेंसी स्टॉप सिग्नल भेज और पा सकती है, अगर उसकी ID, डायरेक्शन और लोकेशन पता हो।",
+        "कम्युनिकेशन-मैंडेटरी ज़ोन में रेडियो कम्युनिकेशन टूटने पर, लगातार तीन RFID टैग मिस होने पर, ट्रेन की डायरेक्शन पता न होने पर, या KAVACH टेरिटरी एग्ज़िट टैग पढ़े जाने पर, KAVACH ऑटोमैटिकली SR मोड में आ जाता है।",
+        "SR मोड से, दो RFID टैग सीक्वेंशियली डिटेक्ट होने और स्टेशन या लेवल-क्रॉसिंग KAVACH से RF कम्युनिकेशन स्थापित होने पर, KAVACH ऑटोमैटिकली On Sight मोड में चला जाता है।"
+      ] } },
+
+  onSight:{ group:"modes", badge:"MODE · OS", name:"On Sight (OS) Mode",
+    summary:"KAVACH lets you into occupied track, at tightly capped speed, while you watch the road yourself.",
+    points:[
+      "At the start of a mission, KAVACH sets the train's direction using RFID tags and then switches to On Sight mode.",
+      "On a Calling-On route in Full Supervision, KAVACH automatically enters On Sight mode, letting you monitor track conditions yourself.",
+      "This mode allows entry into an occupied track section.",
+      "Speed is capped at 30 kmph for Home and Starter signals, and at the maximum permissible speed for LSS and IBS signals.",
+      "The mode exits automatically once the train passes the next stop signal at OFF aspect.",
+      "On Sight also activates automatically once Full Supervision conditions are met, once the train has cleared at least one stop signal at OFF."
+    ], aliases:["on sight","onsight","os mode"],
+    hiAliases:["ऑन साइट","ऑनसाइट"],
+    hi:{ name:"ऑन साइट (OS) मोड",
+      summary:"KAVACH आपको ऑक्युपाइड ट्रैक में जाने देता है, बहुत सीमित स्पीड पर, जबकि आप खुद रास्ता देखते हैं।",
+      points:[
+        "मिशन की शुरुआत में, KAVACH RFID टैग से ट्रेन की डायरेक्शन सेट करता है और फिर On Sight मोड में स्विच करता है।",
+        "Full Supervision में Calling-On रूट पर, KAVACH ऑटोमैटिकली On Sight मोड में आ जाता है, ताकि आप खुद ट्रैक कंडीशन देख सकें।",
+        "यह मोड ऑक्युपाइड ट्रैक सेक्शन में एंट्री की इजाज़त देता है।",
+        "Home और Starter सिग्नल के लिए स्पीड 30 किलोमीटर प्रति घंटा तक सीमित है, और LSS व IBS सिग्नल के लिए मैक्सिमम परमिसिबल स्पीड तक।",
+        "जैसे ही ट्रेन अगले स्टॉप सिग्नल को OFF एस्पेक्ट पर पार करती है, यह मोड ऑटोमैटिकली एग्ज़िट हो जाता है।",
+        "Full Supervision की शर्तें पूरी होने पर भी On Sight ऑटोमैटिकली एक्टिवेट होता है, जब ट्रेन कम से कम एक स्टॉप सिग्नल OFF पर क्लियर कर चुकी हो।"
+      ] } },
+
+  fullSupervision:{ group:"modes", badge:"MODE · FS", name:"Full Supervision (FS) Mode",
+    summary:"KAVACH's normal running state — full protection, using a dynamic speed profile.",
+    points:[
+      "Activates automatically once all KAVACH conditions are met — it cannot be selected by the loco pilot.",
+      "Starts when train and track data, including speed limits and movement authority, are available.",
+      "The system tracks train movement using a dynamic speed profile.",
+      "Provides train speed, permitted speed, target distance, and target speed for safe operation.",
+      "Drops to Limited Supervision automatically if radio communication fails for 30 seconds in a communication-mandatory area, provided track data is available for at least 3000 metres.",
+      "Drops to Staff Responsible automatically if three consecutive RFID tags are missed."
+    ], aliases:["full supervision","fs mode","full supervision mode"],
+    hiAliases:["फुल सुपरविजन"],
+    hi:{ name:"फुल सुपरविजन (FS) मोड",
+      summary:"KAVACH की नॉर्मल रनिंग स्टेट — डायनामिक स्पीड प्रोफाइल के साथ पूरी प्रोटेक्शन।",
+      points:[
+        "यह तब ऑटोमैटिकली एक्टिवेट होता है जब सारी KAVACH कंडीशन पूरी होती हैं — लोको पायलट इसे सिलेक्ट नहीं कर सकता।",
+        "यह तब शुरू होता है जब ट्रेन और ट्रैक डेटा, जिसमें स्पीड लिमिट और मूवमेंट अथॉरिटी शामिल है, उपलब्ध होते हैं।",
+        "सिस्टम डायनामिक स्पीड प्रोफाइल का इस्तेमाल करके ट्रेन मूवमेंट ट्रैक करता है।",
+        "सेफ ऑपरेशन के लिए ट्रेन स्पीड, परमिटेड स्पीड, टारगेट डिस्टेंस और टारगेट स्पीड देता है।",
+        "अगर कम्युनिकेशन-मैंडेटरी एरिया में रेडियो कम्युनिकेशन 30 सेकंड के लिए फेल हो जाए, और कम से कम 3000 मीटर तक ट्रैक डेटा उपलब्ध हो, तो यह ऑटोमैटिकली Limited Supervision में चला जाता है।",
+        "लगातार तीन RFID टैग मिस होने पर यह ऑटोमैटिकली Staff Responsible में चला जाता है।"
+      ] } },
+
+  limitedSupervision:{ group:"modes", badge:"MODE · LS", name:"Limited Supervision (LS) Mode",
+    summary:"A fallback when radio communication drops but track data is still available — you follow signals manually here.",
+    points:[
+      "Not selectable by the loco pilot — it activates automatically.",
+      "Triggers if radio communication fails for 30 seconds in an absolute-block section, or 15 seconds in an auto-block section, provided track data is available for up to 3000 metres.",
+      "Speed supervision continues based on the known track layout.",
+      "Exits when communication is restored, when an On Sight movement authority is received, or when the loco pilot selects Reverse or Shunt mode.",
+      "The loco pilot must manually follow all signals and speed limits while in this mode."
+    ], aliases:["limited supervision","ls mode","limited supervision mode"],
+    hiAliases:["लिमिटेड सुपरविजन"],
+    hi:{ name:"लिमिटेड सुपरविजन (LS) मोड",
+      summary:"जब रेडियो कम्युनिकेशन टूट जाए लेकिन ट्रैक डेटा फिर भी उपलब्ध हो, तब का फॉलबैक — यहाँ सिग्नल आपको मैनुअली फॉलो करने होते हैं।",
+      points:[
+        "लोको पायलट इसे सिलेक्ट नहीं कर सकता — यह ऑटोमैटिकली एक्टिवेट होता है।",
+        "यह तब ट्रिगर होता है जब एब्सोल्यूट-ब्लॉक सेक्शन में 30 सेकंड, या ऑटो-ब्लॉक सेक्शन में 15 सेकंड के लिए रेडियो कम्युनिकेशन फेल हो जाए, और 3000 मीटर तक ट्रैक डेटा उपलब्ध हो।",
+        "जाने-पहचाने ट्रैक लेआउट के आधार पर स्पीड सुपरविजन जारी रहता है।",
+        "यह तब एग्ज़िट होता है जब कम्युनिकेशन वापस आ जाए, On Sight मूवमेंट अथॉरिटी मिल जाए, या लोको पायलट Reverse या Shunt मोड सिलेक्ट करे।",
+        "इस मोड में लोको पायलट को सारे सिग्नल और स्पीड लिमिट मैनुअली फॉलो करने होते हैं।"
+      ] } },
+
+  override:{ group:"modes", badge:"MODE · OVRD", name:"Override (OVRD) Selection",
+    summary:"How you pass a red signal or extend past a short movement authority, with KAVACH still watching your speed.",
+    points:[
+      "Selected by pressing OVRD then CNFM.",
+      "Permitted only when movement authority is below 200 metres and the train is at standstill.",
+      "For LSS or IB signals, Override is allowed even while the train is moving, at the permitted section speed.",
+      "If the On Sight movement authority is extended, or Override times out — default 240 seconds — without the train moving, the system reverts to the previous mode.",
+      "Override speed is capped at 30 kmph for Home and Starter signals, and at the permitted section speed for LSS, IB, and Gate signals.",
+      "The system still obeys any SOS signal received from Stationary KAVACH.",
+      "The trip and override counter reading must be checked and recorded."
+    ], aliases:["override","ovrd","override mode","override selection"],
+    hiAliases:["ओवरराइड"],
+    hi:{ name:"ओवरराइड (OVRD) सिलेक्शन",
+      summary:"रेड सिग्नल पास करने या छोटी मूवमेंट अथॉरिटी से आगे बढ़ने का तरीका, जबकि KAVACH फिर भी आपकी स्पीड देखता रहता है।",
+      points:[
+        "OVRD दबाकर, फिर CNFM से सिलेक्ट किया जाता है।",
+        "यह सिर्फ तब अनुमति है जब मूवमेंट अथॉरिटी 200 मीटर से कम हो और ट्रेन स्टैंडस्टिल में हो।",
+        "LSS या IB सिग्नल के लिए, Override तब भी अनुमति है जब ट्रेन परमिटेड सेक्शन स्पीड पर चल रही हो।",
+        "अगर On Sight मूवमेंट अथॉरिटी बढ़ जाए, या Override टाइम आउट हो जाए (डिफॉल्ट 240 सेकंड) बिना ट्रेन के चले, तो सिस्टम पिछले मोड में वापस चला जाता है।",
+        "Override स्पीड Home और Starter सिग्नल के लिए 30 किलोमीटर प्रति घंटा, और LSS, IB व Gate सिग्नल के लिए परमिटेड सेक्शन स्पीड तक सीमित है।",
+        "सिस्टम स्टेशनरी KAVACH से मिलने वाले किसी भी SOS सिग्नल को फिर भी मानता है।",
+        "ट्रिप और ओवरराइड काउंटर रीडिंग चेक और रिकॉर्ड करनी चाहिए।"
+      ] } },
+
+  trip:{ group:"modes", badge:"MODE · TRIP", name:"Trip Mode",
+    summary:"KAVACH has stopped you for cause — a SPAD or an authority breach — and holds the train until you acknowledge.",
+    points:[
+      "Activates when the train passes a stop signal at ON, or exceeds the end of authority by 30 metres.",
+      "Also triggers on an onboard KAVACH malfunction that forces a safety intervention, or if a signal reverts to danger unexpectedly without enough braking distance.",
+      "Stationary KAVACH sends an SOS signal, causing the onboard unit to apply continuous braking.",
+      "The system holds the train stationary through standstill supervision.",
+      "To release the brakes, press P_TRIP then CNFM.",
+      "The trip and override counter reading must be checked and recorded."
+    ], aliases:["trip mode","tripped","train tripped","spad"],
+    hiAliases:["ट्रिप मोड","ट्रेन ट्रिप"],
+    hi:{ name:"ट्रिप मोड",
+      summary:"KAVACH ने किसी वजह से आपको रोक दिया है — SPAD या अथॉरिटी ब्रीच — और आपके एक्नॉलेज करने तक ट्रेन को होल्ड रखता है।",
+      points:[
+        "यह तब एक्टिवेट होता है जब ट्रेन ON पोजीशन पर स्टॉप सिग्नल पास करती है, या एंड ऑफ अथॉरिटी को 30 मीटर से ज़्यादा पार करती है।",
+        "यह ऑनबोर्ड KAVACH में किसी मालफंक्शन से भी ट्रिगर होता है जो सेफ्टी इंटरवेंशन फोर्स करता है, या अगर सिग्नल अचानक डेंजर पर चला जाए बिना पर्याप्त ब्रेकिंग डिस्टेंस के।",
+        "स्टेशनरी KAVACH SOS सिग्नल भेजता है, जिससे ऑनबोर्ड यूनिट कंटीन्युअस ब्रेकिंग लगाती है।",
+        "सिस्टम स्टैंडस्टिल सुपरविजन के ज़रिए ट्रेन को स्टेशनरी रखता है।",
+        "ब्रेक रिलीज़ करने के लिए, P_TRIP दबाएं फिर CNFM।",
+        "ट्रिप और ओवरराइड काउंटर रीडिंग चेक और रिकॉर्ड करनी चाहिए।"
+      ] } },
+
+  postTrip:{ group:"modes", badge:"MODE · P-TRIP", name:"Post Trip Mode",
+    summary:"Right after a trip release — a tightly speed-capped mode until you re-establish full protection.",
+    points:[
+      "Activated by pressing P_TRIP then CNFM, which releases the brakes.",
+      "To exit Post Trip mode, select OVRD then CNFM — KAVACH then switches to On Sight mode.",
+      "Onboard KAVACH caps speed at 30 kmph for Home and Starter signals, section speed for LSS or IB, and 15 kmph by day or 8 kmph at night for automatic signals."
+    ], aliases:["post trip","post trip mode","p trip","ptrip"],
+    hiAliases:["पोस्ट ट्रिप"],
+    hi:{ name:"पोस्ट ट्रिप मोड",
+      summary:"ट्रिप रिलीज़ के तुरंत बाद — फुल प्रोटेक्शन वापस स्थापित होने तक बहुत सीमित स्पीड वाला मोड।",
+      points:[
+        "P_TRIP दबाकर फिर CNFM से एक्टिवेट होता है, जो ब्रेक रिलीज़ करता है।",
+        "पोस्ट ट्रिप मोड से बाहर निकलने के लिए, OVRD दबाएं फिर CNFM — तब KAVACH On Sight मोड में स्विच हो जाता है।",
+        "ऑनबोर्ड KAVACH Home और Starter सिग्नल के लिए 30 किलोमीटर प्रति घंटा, LSS या IB के लिए सेक्शन स्पीड, और ऑटोमैटिक सिग्नल के लिए दिन में 15 और रात में 8 किलोमीटर प्रति घंटा तक सीमित करता है।"
+      ] } },
+
+  nonLeading:{ group:"modes", badge:"MODE · NL", name:"Non-Leading Mode",
+    summary:"For the slave engine of a multi-loco consist — KAVACH steps back and lets the leading loco supervise.",
+    points:[
+      "Selected manually by the loco pilot when the train is at standstill.",
+      "Used for the slave engine, whether it's electrically coupled to the leading engine as remote-controlled, or not coupled as non-remote-controlled.",
+      "In Non-Leading mode, the Loco KAVACH does not monitor train movement."
+    ], aliases:["non leading","non-leading","nl mode","non leading mode"],
+    hiAliases:["नॉन लीडिंग","नॉन-लीडिंग"],
+    hi:{ name:"नॉन-लीडिंग मोड",
+      summary:"मल्टी-लोको कंसिस्ट के स्लेव इंजन के लिए — KAVACH पीछे हट जाता है और लीडिंग लोको को सुपरविजन करने देता है।",
+      points:[
+        "लोको पायलट इसे मैनुअली सिलेक्ट करता है, सिर्फ तब जब ट्रेन स्टैंडस्टिल में हो।",
+        "यह स्लेव इंजन के लिए इस्तेमाल होता है, चाहे वह लीडिंग इंजन से इलेक्ट्रिकली कपल्ड हो (रिमोट-कंट्रोल्ड) या न कपल्ड हो (नॉन-रिमोट-कंट्रोल्ड)।",
+        "नॉन-लीडिंग मोड में, लोको KAVACH ट्रेन मूवमेंट मॉनिटर नहीं करता।"
+      ] } },
+
+  reverse:{ group:"modes", badge:"MODE · REV", name:"Reverse Mode",
+    summary:"A short, tightly limited move backward without changing cabs or the train's orientation.",
+    points:[
+      "Activated by pressing REV then CNFM.",
+      "Lets the loco pilot change the train's direction while staying in the same cab, without changing the train's orientation.",
+      "By default KAVACH caps ceiling speed at 25 kmph, maximum reverse distance at 500 metres, and duration at 300 seconds.",
+      "Signal aspects, movement authority, and RFID tag information are not required in this mode."
+    ], aliases:["reverse mode","reverse"],
+    hiAliases:["रिवर्स मोड","रिवर्स"],
+    hi:{ name:"रिवर्स मोड",
+      summary:"बिना कैब बदले और बिना ट्रेन की ओरिएंटेशन बदले, एक छोटी और सख्ती से सीमित पीछे की मूवमेंट।",
+      points:[
+        "REV दबाकर फिर CNFM से एक्टिवेट होता है।",
+        "लोको पायलट को उसी कैब में रहते हुए ट्रेन की डायरेक्शन बदलने देता है, बिना ट्रेन की ओरिएंटेशन बदले।",
+        "डिफॉल्ट रूप से KAVACH सीलिंग स्पीड 25 किलोमीटर प्रति घंटा, मैक्सिमम रिवर्स डिस्टेंस 500 मीटर, और ड्यूरेशन 300 सेकंड तक सीमित करता है।",
+        "इस मोड में सिग्नल एस्पेक्ट, मूवमेंट अथॉरिटी और RFID टैग जानकारी ज़रूरी नहीं होती।"
+      ] } },
+
+  isolation:{ group:"modes", badge:"MODE · ISO", name:"Isolation Mode",
+    summary:"Used only when KAVACH malfunctions — the system steps out of the brake loop entirely.",
+    points:[
+      "Used by the loco pilot when KAVACH malfunctions.",
+      "Onboard KAVACH is disconnected from the brake system and does not supervise train movement.",
+      "The DMI clearly indicates that onboard KAVACH is in manual isolation.",
+      "The isolation counter reading must be checked and logged, with a reason."
+    ], aliases:["isolation mode","isolate","isolation"],
+    hiAliases:["आइसोलेशन"],
+    hi:{ name:"आइसोलेशन मोड",
+      summary:"सिर्फ तब इस्तेमाल होता है जब KAVACH मालफंक्शन करे — सिस्टम पूरी तरह ब्रेक लूप से बाहर हो जाता है।",
+      points:[
+        "जब KAVACH मालफंक्शन करता है, तब लोको पायलट इसका इस्तेमाल करता है।",
+        "ऑनबोर्ड KAVACH ब्रेक सिस्टम से डिस्कनेक्ट हो जाता है और ट्रेन मूवमेंट सुपरवाइज़ नहीं करता।",
+        "DMI साफ तौर पर दिखाता है कि ऑनबोर्ड KAVACH मैनुअल आइसोलेशन में है।",
+        "आइसोलेशन काउंटर रीडिंग को वजह के साथ चेक और लॉग करना चाहिए।"
+      ] } },
+
+  systemFailure:{ group:"modes", badge:"MODE · SF", name:"System Failure (SF) Mode",
+    summary:"KAVACH detected a safety-affecting fault and has already applied the brakes.",
+    points:[
+      "Activated when a fault affecting safety is detected.",
+      "Onboard KAVACH commands the Emergency Brake.",
+      "The loco pilot must isolate the KAVACH system and operate the train under their own responsibility.",
+      "The mode exits once the loco pilot isolates the system and takes control."
+    ], aliases:["system failure","sf mode","fault","system fault"],
+    hiAliases:["सिस्टम फेलियर","सिस्टम फॉल्ट"],
+    hi:{ name:"सिस्टम फेलियर (SF) मोड",
+      summary:"KAVACH ने कोई सेफ्टी से जुड़ा फॉल्ट डिटेक्ट किया है और पहले ही ब्रेक लगा चुका है।",
+      points:[
+        "जब कोई सेफ्टी को असर करने वाला फॉल्ट डिटेक्ट होता है, तब यह एक्टिवेट होता है।",
+        "ऑनबोर्ड KAVACH इमरजेंसी ब्रेक कमांड करता है।",
+        "लोको पायलट को KAVACH सिस्टम आइसोलेट करना होता है और अपनी जिम्मेदारी पर ट्रेन ऑपरेट करनी होती है।",
+        "जब लोको पायलट सिस्टम आइसोलेट करके कंट्रोल ले लेता है, तब यह मोड एग्ज़िट होता है।"
+      ] } },
+
+  sos:{ group:"sos", badge:"PROCEDURE", name:"SOS generation and reception",
+    summary:"How KAVACH broadcasts and reacts to a Save Our Soul emergency alert.",
+    points:[
+      "Manual SOS: press SOS and COMMON together on the DMI to alert nearby KAVACH-equipped trains from the active cab.",
+      "Unusual stoppage SOS: if the train stops unexpectedly with a clear track, or movement authority exceeds 300 metres, KAVACH prompts you with a buzzer — press Acknowledge or Cancel within 15 seconds, or KAVACH broadcasts SOS and applies brakes to nearby trains.",
+      "SOS reception: when your onboard KAVACH receives an SOS from another loco or a station, you apply brakes and stop, then run at a supervised 30 kmph until you pass the source.",
+      "Normal speed returns once the SOS is cancelled by its source, the train is moved more than 1500 metres away, or no SOS is received from that source for over three minutes.",
+      "The DMI shows the originating station or loco ID whenever an SOS is received.",
+      "The SOS counter reading must be checked and logged."
+    ], aliases:["sos","save our soul","emergency alert","emergency signal","sos generation","sos reception"],
+    hiAliases:["एसओएस","सोस"],
+    hi:{ name:"SOS जनरेशन और रिसेप्शन",
+      summary:"KAVACH Save Our Soul इमरजेंसी अलर्ट को कैसे भेजता और उस पर कैसे रिएक्ट करता है।",
+      points:[
+        "मैनुअल SOS: एक्टिव कैब से नज़दीकी KAVACH-फिटेड ट्रेनों को अलर्ट करने के लिए DMI पर SOS और COMMON एक साथ दबाएं।",
+        "अनयूज़ुअल स्टॉपेज SOS: अगर ट्रेन क्लियर ट्रैक होने के बावजूद अचानक रुक जाए, या मूवमेंट अथॉरिटी 300 मीटर से ज़्यादा हो, तो KAVACH बजर के साथ आपको प्रॉम्प्ट करता है — 15 सेकंड के अंदर Acknowledge या Cancel दबाएं, वरना KAVACH SOS ब्रॉडकास्ट करके नज़दीकी ट्रेनों में ब्रेक लगा देता है।",
+        "SOS रिसेप्शन: जब आपका ऑनबोर्ड KAVACH किसी दूसरी लोको या स्टेशन से SOS पाता है, तो आप ब्रेक लगाकर रुकते हैं, फिर सोर्स पार करने तक सुपरवाइज़्ड 30 किलोमीटर प्रति घंटा पर चलते हैं।",
+        "नॉर्मल स्पीड तब वापस आती है जब सोर्स SOS कैंसिल कर दे, ट्रेन 1500 मीटर से ज़्यादा दूर चली जाए, या उस सोर्स से तीन मिनट से ज़्यादा समय तक कोई SOS न मिले।",
+        "जब भी कोई SOS मिलता है, DMI ओरिजिनेटिंग स्टेशन या लोको ID दिखाता है।",
+        "SOS काउंटर रीडिंग चेक और लॉग करनी चाहिए।"
+      ] } },
+
+  collision:{ group:"sos", badge:"SAFETY", name:"Collision scenarios",
+    summary:"How KAVACH warns you before a head-on or rear-end collision — and what you can still choose to do.",
+    points:[
+      "Head-on collision: when two KAVACH-equipped trains enter the same line and start moving toward each other, KAVACH detects this over radio and alerts you to apply brakes. If you genuinely need to keep moving, you can select Shunt or Non-Leading mode.",
+      "The DMI shows a message such as 'Head on collision with loco [ID] in [distance] m'.",
+      "Rear-end collision: when two KAVACH-equipped trains are on the same line moving the same direction, the rear train's KAVACH detects it and alerts that loco pilot. The leading loco's KAVACH is unaffected.",
+      "The DMI shows a message such as 'Rear End Collision with Loco [ID] in [distance] m'.",
+      "Both detections depend on radio communication being available between the two KAVACH-equipped trains."
+    ], aliases:["collision","head on","rear end","head-on","collision scenario","side collision"],
+    hiAliases:["कोलिजन","टक्कर","हेड ऑन","रियर एंड"],
+    hi:{ name:"कोलिजन सिनेरियो",
+      summary:"KAVACH हेड-ऑन या रियर-एंड कोलिजन से पहले कैसे वॉर्न करता है — और आपके पास अभी भी क्या ऑप्शन बचता है।",
+      points:[
+        "हेड-ऑन कोलिजन: जब दो KAVACH-फिटेड ट्रेनें एक ही लाइन पर एक-दूसरे की ओर बढ़ने लगती हैं, तो KAVACH इसे रेडियो पर डिटेक्ट करता है और आपको ब्रेक लगाने के लिए अलर्ट करता है। अगर वाकई आगे बढ़ना ज़रूरी हो, तो आप Shunt या Non-Leading मोड सिलेक्ट कर सकते हैं।",
+        "DMI पर मैसेज दिखता है, जैसे 'Head on collision with loco [ID] in [distance] m'।",
+        "रियर-एंड कोलिजन: जब दो KAVACH-फिटेड ट्रेनें एक ही लाइन पर एक ही डायरेक्शन में चल रही हों, तो पीछे वाली ट्रेन का KAVACH इसे डिटेक्ट करके उस लोको पायलट को अलर्ट करता है। आगे वाली लोको का KAVACH इससे अनअफेक्टेड रहता है।",
+        "DMI पर मैसेज दिखता है, जैसे 'Rear End Collision with Loco [ID] in [distance] m'।",
+        "दोनों डिटेक्शन इस बात पर निर्भर करते हैं कि दोनों KAVACH-फिटेड ट्रेनों के बीच रेडियो कम्युनिकेशन उपलब्ध हो।"
+      ] } },
+
+  dosDonts:{ group:"rules", badge:"RULES", name:"Do's and don'ts",
+    summary:"The short list every loco pilot should keep front of mind.",
+    points:[
+      "Do verify KAVACH, the DMI, and the BIU before switching on — treat any abnormality as a defective unit and inform your loco shed and Traction/Power Controller.",
+      "Do read this guide together with the OEM user manuals.",
+      "Do acknowledge DMI alerts immediately, within the specified time.",
+      "Do select the correct train configuration and operating mode.",
+      "Do open MR and BP valves, set the BIU switch to service mode, and switch on the required MCBs when activating KAVACH — and reverse all of that when switching off.",
+      "Do inform the Traction or Power Controller whenever KAVACH is defective.",
+      "Do follow G&SR provisions and Railways' operational requirements at all times.",
+      "Don't switch off power to KAVACH while it's functioning.",
+      "Don't attempt any repair work yourself.",
+      "Don't remove system modules, connectors, radio modems, or antenna connections while KAVACH is in operation.",
+      "Don't isolate the BIU switch while the loco is moving."
+    ], aliases:["dos and don'ts","dos donts","do's and don'ts","rules","safety rules","dos and donts"],
+    hiAliases:["क्या करें क्या न करें","नियम","सेफ्टी रूल्स"],
+    hi:{ name:"क्या करें, क्या न करें",
+      summary:"हर लोको पायलट को हमेशा याद रखने वाली छोटी लिस्ट।",
+      points:[
+        "करें: ऑन करने से पहले KAVACH, DMI और BIU वेरिफाई करें — किसी भी गड़बड़ी को डिफेक्टिव यूनिट मानें और अपने लोको शेड और ट्रैक्शन या पावर कंट्रोलर को सूचित करें।",
+        "करें: यह गाइड OEM यूज़र मैनुअल के साथ पढ़ें।",
+        "करें: DMI अलर्ट को तय समय के अंदर तुरंत एक्नॉलेज करें।",
+        "करें: सही ट्रेन कॉन्फ़िगरेशन और ऑपरेटिंग मोड सिलेक्ट करें।",
+        "करें: KAVACH ऑन करते समय MR और BP वाल्व खोलें, BIU स्विच सर्विस मोड में रखें, और ज़रूरी MCB ऑन करें — और बंद करते समय यही सब उल्टा करें।",
+        "करें: जब भी KAVACH डिफेक्टिव हो, ट्रैक्शन या पावर कंट्रोलर को सूचित करें।",
+        "करें: हमेशा G&SR प्रावधानों और रेलवे की ऑपरेशनल रिक्वायरमेंट्स को फॉलो करें।",
+        "न करें: KAVACH के फंक्शन करते समय उसका पावर बंद न करें।",
+        "न करें: खुद कोई रिपेयर वर्क करने की कोशिश न करें।",
+        "न करें: KAVACH ऑपरेशन में रहते हुए सिस्टम मॉड्यूल, कनेक्टर, रेडियो मॉडेम या एंटीना कनेक्शन न हटाएं।",
+        "न करें: लोको चलते समय BIU स्विच आइसोलेट न करें।"
+      ] } },
+
+  modeTransition:{ group:"rules", badge:"REFERENCE", name:"Mode transitions & loco pilot responsibility",
+    summary:"How the twelve KAVACH modes hand off to each other, and what falls on you at each step.",
+    points:[
+      "Standby to Shunt: after configuration, if Shunt is selected at standstill, the system moves from Standby into Shunt.",
+      "Standby to Staff Responsible: after configuration, selecting SR moves the system from Standby into SR.",
+      "Staff Responsible to On Sight: automatic, once two RFID tags are read sequentially and RF communication is established with the station or level-crossing KAVACH.",
+      "Full Supervision or On Sight to Trip: on a SPAD, an onboard malfunction, or a signal reverting to danger without adequate braking distance.",
+      "Full Supervision to Limited Supervision: automatic, when valid radio packets are unavailable for the configured duration (default 30 seconds) in a communication-mandatory area, and at least 3000 metres of track profile is available.",
+      "On Sight to Full Supervision: automatic, once the train has cleared at least one stop signal at OFF, track profile and valid radio packets are available, and movement authority remains valid.",
+      "Full Supervision to Staff Responsible: automatic, on three consecutive missed RFID tags.",
+      "Moving from a KAVACH section to a non-KAVACH-fitted section: KAVACH switches to SR mode and you're prompted to acknowledge within 15 seconds of exiting KAVACH territory — fail to acknowledge, and the brakes apply automatically."
+    ], aliases:["mode transition","transition chart","how modes change","mode transitions"],
+    hiAliases:["मोड ट्रांजिशन"],
+    hi:{ name:"मोड ट्रांजिशन और लोको पायलट की जिम्मेदारी",
+      summary:"बारह KAVACH मोड एक-दूसरे को कैसे हैंडओवर करते हैं, और हर स्टेप पर आपकी क्या जिम्मेदारी है।",
+      points:[
+        "Standby से Shunt: कॉन्फ़िगरेशन के बाद, अगर स्टैंडस्टिल में Shunt सिलेक्ट किया जाए, तो सिस्टम Standby से Shunt में चला जाता है।",
+        "Standby से Staff Responsible: कॉन्फ़िगरेशन के बाद, SR सिलेक्ट करने पर सिस्टम Standby से SR में चला जाता है।",
+        "Staff Responsible से On Sight: ऑटोमैटिक, जब दो RFID टैग सीक्वेंशियली पढ़े जाएं और स्टेशन या लेवल-क्रॉसिंग KAVACH से RF कम्युनिकेशन स्थापित हो जाए।",
+        "Full Supervision या On Sight से Trip: SPAD होने पर, ऑनबोर्ड मालफंक्शन पर, या सिग्नल के बिना पर्याप्त ब्रेकिंग डिस्टेंस के डेंजर पर चले जाने पर।",
+        "Full Supervision से Limited Supervision: ऑटोमैटिक, जब कम्युनिकेशन-मैंडेटरी एरिया में तय समय (डिफॉल्ट 30 सेकंड) तक वैलिड रेडियो पैकेट न मिलें, और कम से कम 3000 मीटर तक ट्रैक प्रोफाइल उपलब्ध हो।",
+        "On Sight से Full Supervision: ऑटोमैटिक, जब ट्रेन कम से कम एक स्टॉप सिग्नल OFF पर क्लियर कर चुकी हो, ट्रैक प्रोफाइल और वैलिड रेडियो पैकेट उपलब्ध हों, और मूवमेंट अथॉरिटी वैलिड रहे।",
+        "Full Supervision से Staff Responsible: ऑटोमैटिक, लगातार तीन RFID टैग मिस होने पर।",
+        "KAVACH सेक्शन से नॉन-KAVACH-फिटेड सेक्शन में जाना: KAVACH SR मोड में स्विच हो जाता है और KAVACH टेरिटरी से बाहर निकलने के 15 सेकंड के अंदर आपसे एक्नॉलेज करने को कहा जाता है — एक्नॉलेज न करने पर ब्रेक ऑटोमैटिकली लग जाते हैं।"
+      ] } }
+};
+
+const UI_TEXT = {
+  en:{
+    tagline:"Voice reference assistant for loco pilots",
+    micTap:"Tap to ask", micListening:"Listening…", micSpeaking:"Reading…",
+    micHint:"Say a mode or system name — \"Standby mode\", \"Trip mode\", \"How does SOS work\", \"Brake Interface Unit\"",
+    heardPrefix:"Heard: ",
+    emptyText:"Ask about a subsystem, the startup sequence, an operating mode, SOS handling, a collision scenario, or the do's and don'ts — this panel reads back like the loco DMI context display.",
+    noMatch:"Didn't catch a KAVACH topic in that — try a mode name like \"trip mode\", a system like \"RFID reader\", or \"SOS\".",
+    related:"Related",
+    headSubsystems:"Subsystems", headStartup:"Startup & configuration", headModes:"Operating modes",
+    headSos:"SOS & collision", headRules:"Rules",
+    typePlaceholder:"Or type: e.g. limited supervision",
+    ask:"Ask",
+    searchPlaceholder:"Search KAVACH topics",
+    searchNoResults:"No matching topics.",
+    searchClear:"Clear",
+    voiceSupportMissing:"Voice input isn't available on this device — type your question below instead.",
+    permBlocked:"Microphone permission was denied. You can allow it from the app's system settings, or type your question below.",
+    noSpeech:"Didn't catch any speech — tap the mic and try again.",
+    noMic:"No microphone was found on this device. Type your question below instead.",
+    netErr:"Speech recognition needs an internet connection to work on this device — type your question below instead.",
+    genericMicErr:"Mic error — type your question below instead.",
+    startFail:"Could not start listening. Try tapping the mic again, or type your question below.",
+    ttsUnavailable:"Voice playback isn't available for this language on this device — the answer is still shown below."
+  },
+  hi:{
+    tagline:"लोको पायलटों के लिए वॉइस रेफरेंस असिस्टेंट",
+    micTap:"पूछने के लिए टैप करें", micListening:"सुन रहा है…", micSpeaking:"बता रहा है…",
+    micHint:"किसी मोड या सिस्टम का नाम बोलें — \"स्टैंडबाय मोड\", \"ट्रिप मोड\", \"SOS कैसे काम करता है\", \"ब्रेक इंटरफेस यूनिट\"",
+    heardPrefix:"सुना: ",
+    emptyText:"किसी सबसिस्टम, स्टार्टअप सीक्वेंस, ऑपरेटिंग मोड, SOS, कोलिजन सिनेरियो, या नियमों के बारे में पूछें — यह पैनल लोको DMI के कॉन्टेक्स्ट मैसेज की तरह जवाब देता है।",
+    noMatch:"इसमें कोई KAVACH टॉपिक समझ नहीं आया — कोई मोड नाम जैसे \"ट्रिप मोड\", कोई सिस्टम जैसे \"RFID रीडर\", या \"SOS\" ट्राई करें।",
+    related:"जुड़े हुए टॉपिक",
+    headSubsystems:"सबसिस्टम", headStartup:"स्टार्टअप और कॉन्फ़िगरेशन", headModes:"ऑपरेटिंग मोड",
+    headSos:"SOS और कोलिजन", headRules:"नियम",
+    typePlaceholder:"या टाइप करें: जैसे लिमिटेड सुपरविजन",
+    ask:"पूछें",
+    searchPlaceholder:"KAVACH टॉपिक खोजें",
+    searchNoResults:"कोई मिलता-जुलता टॉपिक नहीं मिला।",
+    searchClear:"साफ़ करें",
+    voiceSupportMissing:"इस डिवाइस पर वॉइस इनपुट उपलब्ध नहीं है — नीचे अपना सवाल टाइप करें।",
+    permBlocked:"माइक्रोफोन परमिशन नहीं दी गई। आप इसे ऐप की सिस्टम सेटिंग्स से अलाउ कर सकते हैं, या नीचे टाइप करें।",
+    noSpeech:"कुछ सुनाई नहीं दिया — माइक टैप करके फिर से बोलें।",
+    noMic:"इस डिवाइस पर कोई माइक्रोफोन नहीं मिला। नीचे अपना सवाल टाइप करें।",
+    netErr:"इस डिवाइस पर स्पीच रिकग्निशन के लिए इंटरनेट कनेक्शन चाहिए — नीचे टाइप करें।",
+    genericMicErr:"माइक एरर — नीचे अपना सवाल टाइप करें।",
+    startFail:"सुनना शुरू नहीं हो सका। दोबारा माइक टैप करें, या नीचे टाइप करें।",
+    ttsUnavailable:"इस भाषा के लिए इस डिवाइस पर आवाज़ उपलब्ध नहीं है — जवाब नीचे लिखा हुआ है।"
+  }
+};
+
+let currentLang = 'en';
+let currentKey = null;
+
+const GRID_LABELS_EN = {
+  vitalComputer:"Processing core", dmi:"Your interface", biu:"Brake control", rfid:"Location sense",
+  speedometer:"Speed input", gpsGsm:"Time & comms",
+  startup:"Before you move", trainConfig:"Tell KAVACH your train",
+  standby:"Default, unselectable", shunt:"Yard movement", staffResponsible:"Fallback mode",
+  onSight:"Occupied track, low speed", fullSupervision:"Normal running", limitedSupervision:"No radio, track known",
+  override:"Pass a red signal", trip:"KAVACH has stopped you", postTrip:"Right after a trip",
+  nonLeading:"Slave engine", reverse:"Short reverse move", isolation:"KAVACH out of the loop",
+  systemFailure:"Safety fault detected",
+  sos:"Emergency alerts", collision:"Head-on & rear-end",
+  dosDonts:"Quick safety checklist", modeTransition:"How modes hand off"
+};
+const GRID_LABELS_HI = {
+  vitalComputer:"प्रोसेसिंग कोर", dmi:"आपका इंटरफेस", biu:"ब्रेक कंट्रोल", rfid:"लोकेशन सेंस",
+  speedometer:"स्पीड इनपुट", gpsGsm:"टाइम और कम्युनिकेशन",
+  startup:"चलने से पहले", trainConfig:"KAVACH को ट्रेन बताएं",
+  standby:"डिफॉल्ट, सिलेक्ट नहीं होता", shunt:"यार्ड मूवमेंट", staffResponsible:"फॉलबैक मोड",
+  onSight:"ऑक्युपाइड ट्रैक, कम स्पीड", fullSupervision:"नॉर्मल रनिंग", limitedSupervision:"रेडियो नहीं, ट्रैक पता है",
+  override:"रेड सिग्नल पास करना", trip:"KAVACH ने रोका है", postTrip:"ट्रिप के तुरंत बाद",
+  nonLeading:"स्लेव इंजन", reverse:"छोटी रिवर्स मूवमेंट", isolation:"KAVACH लूप से बाहर",
+  systemFailure:"सेफ्टी फॉल्ट डिटेक्ट",
+  sos:"इमरजेंसी अलर्ट", collision:"हेड-ऑन और रियर-एंड",
+  dosDonts:"क्विक सेफ्टी चेकलिस्ट", modeTransition:"मोड कैसे हैंडओवर होते हैं"
+};
+
+const grids = {subsystems:"gridSubsystems", startup:"gridStartup", modes:"gridModes", sos:"gridSos", rules:"gridRules"};
+
+function buildGrids(){
+  Object.values(grids).forEach(id=>{ document.getElementById(id).innerHTML=''; });
+  Object.entries(KB).forEach(([key,t])=>{
+    const el = document.getElementById(grids[t.group]);
+    const btn = document.createElement('button');
+    btn.className='topic-card';
+    btn.dataset.key=key;
+    const label = currentLang==='hi' ? GRID_LABELS_HI[key] : GRID_LABELS_EN[key];
+    const name = currentLang==='hi' ? t.hi.name : t.name;
+    const nameClass = currentLang==='hi' ? 'hi-text' : '';
+    btn.innerHTML = '<span class="t-name '+nameClass+'">'+name+'</span><span class="t-sub '+nameClass+'">'+(label||'')+'</span>';
+    btn.addEventListener('click', ()=>showTopic(key,true));
+    el.appendChild(btn);
+  });
+  applySearchFilter();
+}
+
+const micBtn = document.getElementById('micBtn');
+const micState = document.getElementById('micState');
+const transcriptBox = document.getElementById('transcriptBox');
+const dotRed = document.getElementById('dotRed'), dotAmber = document.getElementById('dotAmber'), dotGreen = document.getElementById('dotGreen');
+const dmiEmpty = document.getElementById('dmiEmpty');
+const dmiContent = document.getElementById('dmiContent');
+const dmiEyebrow = document.getElementById('dmiEyebrow');
+const dmiName = document.getElementById('dmiName');
+const dmiBadge = document.getElementById('dmiBadge');
+const dmiSummary = document.getElementById('dmiSummary');
+const dmiPoints = document.getElementById('dmiPoints');
+const relatedChips = document.getElementById('relatedChips');
+const voiceSelect = document.getElementById('voiceSelect');
+const voiceRow = document.getElementById('voiceRow');
+const searchInput = document.getElementById('searchInput');
+const searchClearBtn = document.getElementById('searchClearBtn');
+const searchNoResults = document.getElementById('searchNoResults');
+
+const hasBridge = !!(window.AndroidBridge);
+if(!hasBridge){ voiceRow.style.display = 'flex'; }
+
+function setAspect(state){
+  [dotRed,dotAmber,dotGreen].forEach(d=>d.classList.remove('on-red','on-amber','on-green'));
+  micBtn.classList.remove('listening','speaking');
+  const t = UI_TEXT[currentLang];
+  if(state==='idle'){ dotRed.classList.add('on-red'); micState.textContent=t.micTap; }
+  if(state==='listening'){ dotAmber.classList.add('on-amber'); micBtn.classList.add('listening'); micState.textContent=t.micListening; }
+  if(state==='speaking'){ dotGreen.classList.add('on-green'); micBtn.classList.add('speaking'); micState.textContent=t.micSpeaking; }
+}
+
+function matchTopic(query){
+  const q = query.toLowerCase().trim();
+  if(!q) return null;
+  let best=null, bestScore=0;
+  Object.entries(KB).forEach(([key,t])=>{
+    let score=0;
+    const allAliases = t.aliases.concat(t.hiAliases||[]);
+    allAliases.forEach(a=>{
+      const al = a.toLowerCase();
+      if(q.includes(al)) score += al.split(' ').length + (al.length/20);
+    });
+    if(score>bestScore){ bestScore=score; best=key; }
+  });
+  return best;
+}
+
+function relatedFor(key){
+  const group = KB[key].group;
+  return Object.keys(KB).filter(k=>KB[k].group===group && k!==key).slice(0,4);
+}
+
+function showTopic(key, speak){
+  if(!KB[key]) return;
+  currentKey = key;
+  const t = KB[key];
+  const c = currentLang==='hi' ? t.hi : t;
+  const hiClass = currentLang==='hi' ? 'hi-text' : '';
+  dmiEmpty.style.display='none';
+  dmiContent.style.display='flex';
+  dmiEyebrow.textContent = t.group.toUpperCase();
+  dmiName.textContent = c.name;
+  dmiName.className = 'dmi-topic-name ' + hiClass;
+  dmiBadge.textContent = t.badge;
+  dmiSummary.textContent = c.summary;
+  dmiSummary.className = 'dmi-summary ' + hiClass;
+  dmiPoints.innerHTML='';
+  c.points.forEach(p=>{
+    const li=document.createElement('li'); li.textContent=p; li.className=hiClass; dmiPoints.appendChild(li);
+  });
+  relatedChips.innerHTML='';
+  relatedFor(key).forEach(rk=>{
+    const c2=document.createElement('button'); c2.className='related-chip '+hiClass;
+    c2.textContent = currentLang==='hi' ? KB[rk].hi.name : KB[rk].name;
+    c2.addEventListener('click', ()=>showTopic(rk,true));
+    relatedChips.appendChild(c2);
+  });
+  document.querySelectorAll('.topic-card').forEach(cc=>cc.classList.toggle('active', cc.dataset.key===key));
+  if(speak) speakTopic(t);
+}
+
+// ---------------------------------------------------------------------
+// Speech output: native Android TTS via AndroidBridge when available,
+// browser speechSynthesis as a fallback (e.g. testing in a desktop
+// browser before packaging).
+// ---------------------------------------------------------------------
+let cachedVoices = [];
+function refreshVoices(){
+  if(hasBridge) return; // native picks the voice automatically
+  if(!('speechSynthesis' in window)) return;
+  cachedVoices = window.speechSynthesis.getVoices();
+  const wanted = currentLang==='hi' ? 'hi' : 'en';
+  const relevant = cachedVoices.filter(v=>v.lang && v.lang.toLowerCase().startsWith(wanted));
+  const list = relevant.length ? relevant : cachedVoices;
+  voiceSelect.innerHTML='';
+  list.forEach(v=>{
+    const opt=document.createElement('option');
+    opt.value=v.name; opt.textContent=v.name+' ('+v.lang+')';
+    voiceSelect.appendChild(opt);
+  });
+}
+if(!hasBridge && 'speechSynthesis' in window){
+  window.speechSynthesis.onvoiceschanged = refreshVoices;
+  refreshVoices();
+}
+
+function speakTopic(t){
+  const c = currentLang==='hi' ? t.hi : t;
+  const text = c.name + '. ' + c.summary + ' ' + c.points.join('. ') + '.';
+  if(hasBridge){
+    setAspect('speaking');
+    window.AndroidBridge.speak(text, currentLang);
+    return;
+  }
+  if(!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = currentLang==='hi' ? 'hi-IN' : 'en-IN';
+  utter.rate = 0.9;
+  utter.pitch = 0.75;
+  const chosenName = voiceSelect.value;
+  const chosen = cachedVoices.find(v=>v.name===chosenName);
+  if(chosen) utter.voice = chosen;
+  utter.onstart = ()=>setAspect('speaking');
+  utter.onend = ()=>setAspect('idle');
+  utter.onerror = ()=>setAspect('idle');
+  window.speechSynthesis.speak(utter);
+}
+
+function stopSpeaking(){
+  if(hasBridge){ window.AndroidBridge.stopSpeaking(); setAspect('idle'); return; }
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  setAspect('idle');
+}
+
+document.getElementById('replayBtn').addEventListener('click', ()=>{
+  if(currentKey) speakTopic(KB[currentKey]);
+});
+document.getElementById('stopBtn').addEventListener('click', stopSpeaking);
+
+// Callbacks the native Android side invokes directly on window.
+window.onAndroidTtsStart = function(){ setAspect('speaking'); };
+window.onAndroidTtsEnd = function(){ setAspect('idle'); };
+window.onAndroidTtsError = function(code){
+  setAspect('idle');
+  transcriptBox.textContent = UI_TEXT[currentLang].ttsUnavailable;
+};
+
+function handleQuery(query){
+  const t = UI_TEXT[currentLang];
+  transcriptBox.textContent = t.heardPrefix + query;
+  const key = matchTopic(query);
+  if(key){
+    showTopic(key, true);
+  } else {
+    dmiEmpty.style.display='flex';
+    dmiContent.style.display='none';
+    document.getElementById('dmiEmptyText').textContent = t.noMatch;
+    document.getElementById('dmiEmptyText').className = currentLang==='hi' ? 'hi-text' : '';
+    setAspect('idle');
+  }
+}
+
+document.getElementById('askBtn').addEventListener('click', ()=>{
+  const val = document.getElementById('typeInput').value;
+  if(val.trim()) handleQuery(val);
+});
+document.getElementById('typeInput').addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){ const val=e.target.value; if(val.trim()) handleQuery(val); }
+});
+
+// ---------------------------------------------------------------------
+// Search bar — filters the topic grid live, independent of the mic /
+// ask flow above.
+// ---------------------------------------------------------------------
+function applySearchFilter(){
+  const q = searchInput.value.trim().toLowerCase();
+  searchClearBtn.style.display = q ? 'inline-block' : 'none';
+  const cards = document.querySelectorAll('.topic-card');
+  let anyVisible = false;
+  cards.forEach(card=>{
+    const key = card.dataset.key;
+    const t = KB[key];
+    if(!t){ return; }
+    const haystack = [t.name, t.hi.name, t.summary, t.hi.summary]
+      .concat(t.aliases||[]).concat(t.hiAliases||[])
+      .join(' ').toLowerCase();
+    const match = !q || haystack.includes(q);
+    card.style.display = match ? '' : 'none';
+    if(match) anyVisible = true;
+  });
+  searchNoResults.style.display = (q && !anyVisible) ? 'block' : 'none';
+}
+searchInput.addEventListener('input', applySearchFilter);
+searchInput.addEventListener('keydown', (e)=>{
+  if(e.key==='Enter'){
+    const val = searchInput.value;
+    if(val.trim()) handleQuery(val);
+  }
+});
+searchClearBtn.addEventListener('click', ()=>{
+  searchInput.value='';
+  applySearchFilter();
+  searchInput.focus();
+});
+
+// ---------------------------------------------------------------------
+// Language selection + persistence (native SharedPreferences mirror,
+// with localStorage fallback for the plain-browser case).
+// ---------------------------------------------------------------------
+function persistLanguage(lang){
+  try{ localStorage.setItem('kavach_lang', lang); }catch(e){}
+  if(hasBridge){ window.AndroidBridge.saveLanguagePreference(lang); }
+}
+function loadStoredLanguage(){
+  if(hasBridge){
+    try{ const v = window.AndroidBridge.getSavedLanguagePreference(); if(v) return v; }catch(e){}
+  }
+  try{ const v = localStorage.getItem('kavach_lang'); if(v) return v; }catch(e){}
+  return 'en';
+}
+
+function applyLanguage(lang){
+  currentLang = lang;
+  document.getElementById('langEnBtn').classList.toggle('active', lang==='en');
+  document.getElementById('langHiBtn').classList.toggle('active', lang==='hi');
+  const t = UI_TEXT[lang];
+  document.getElementById('taglineText').textContent = t.tagline;
+  document.getElementById('micHint').textContent = micHintForState();
+  document.getElementById('typeInput').placeholder = t.typePlaceholder;
+  document.getElementById('askBtn').textContent = t.ask;
+  document.getElementById('dmiEmptyText').textContent = t.emptyText;
+  document.getElementById('dmiEmptyText').className = lang==='hi' ? 'hi-text' : '';
+  document.getElementById('relatedLabel').textContent = t.related;
+  document.getElementById('headSubsystems').textContent = t.headSubsystems;
+  document.getElementById('headStartup').textContent = t.headStartup;
+  document.getElementById('headModes').textContent = t.headModes;
+  document.getElementById('headSos').textContent = t.headSos;
+  document.getElementById('headRules').textContent = t.headRules;
+  searchInput.placeholder = t.searchPlaceholder;
+  searchClearBtn.textContent = t.searchClear;
+  searchNoResults.textContent = t.searchNoResults;
+  setAspect('idle');
+  buildGrids();
+  refreshVoices();
+  persistLanguage(lang);
+  if(currentKey) showTopic(currentKey, false);
+}
+document.getElementById('langEnBtn').addEventListener('click', ()=>applyLanguage('en'));
+document.getElementById('langHiBtn').addEventListener('click', ()=>applyLanguage('hi'));
+
+// ---------------------------------------------------------------------
+// Voice input: native Android speech recognition via AndroidBridge,
+// with the browser Web Speech API as a fallback when the bridge is not
+// present (e.g. opening this file directly in a desktop browser).
+// ---------------------------------------------------------------------
+let isListening = false;
+
+function micHintForState(){
+  const t = UI_TEXT[currentLang];
+  if(hasBridge) return t.micHint;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  return SR ? t.micHint : t.voiceSupportMissing;
+}
+
+function showMicProblem(msg){
+  setAspect('idle');
+  isListening = false;
+  transcriptBox.textContent = msg;
+}
+
+if(hasBridge){
+  micBtn.addEventListener('click', ()=>{
+    window.AndroidBridge.stopSpeaking();
+    if(isListening){
+      window.AndroidBridge.stopListening();
+      isListening = false;
+      setAspect('idle');
+      return;
+    }
+    isListening = true;
+    setAspect('listening');
+    transcriptBox.textContent = UI_TEXT[currentLang].heardPrefix + '—';
+    window.AndroidBridge.startListening(currentLang);
+  });
+
+  window.onAndroidSpeechResult = function(text){
+    isListening = false;
+    handleQuery(text);
+  };
+  window.onAndroidSpeechError = function(code){
+    const t = UI_TEXT[currentLang];
+    const map = {
+      'not-allowed': t.permBlocked,
+      'no-speech': t.noSpeech,
+      'audio-capture': t.noMic,
+      'network': t.netErr,
+      'unavailable': t.voiceSupportMissing
+    };
+    showMicProblem(map[code] || t.genericMicErr);
+  };
+  window.onAndroidPermissionResult = function(granted){
+    if(!granted) showMicProblem(UI_TEXT[currentLang].permBlocked);
+  };
+} else {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+  if(SR){
+    recognition = new SR();
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (e)=>{ handleQuery(e.results[0][0].transcript); isListening=false; };
+    recognition.onspeechend = ()=>{ recognition.stop(); };
+    recognition.onerror = ()=>{ showMicProblem(UI_TEXT[currentLang].genericMicErr); };
+    recognition.onend = ()=>{ if(isListening){ isListening=false; setAspect('idle'); } };
+
+    micBtn.addEventListener('click', ()=>{
+      if('speechSynthesis' in window) window.speechSynthesis.cancel();
+      if(isListening){ recognition.stop(); isListening=false; setAspect('idle'); return; }
+      try{
+        recognition.lang = currentLang==='hi' ? 'hi-IN' : 'en-IN';
+        recognition.start();
+        isListening = true;
+        setAspect('listening');
+        transcriptBox.textContent = UI_TEXT[currentLang].heardPrefix + '—';
+      }catch(err){ showMicProblem(UI_TEXT[currentLang].startFail); }
+    });
+  } else {
+    micBtn.addEventListener('click', ()=>{
+      document.getElementById('typeInput').focus();
+      showMicProblem(UI_TEXT[currentLang].voiceSupportMissing);
+    });
+  }
+}
+
+// ---------------------------------------------------------------------
+// Footer actions — no-ops outside the Android app (e.g. plain browser
+// preview), so this file stays testable without a device.
+// ---------------------------------------------------------------------
+document.getElementById('shareLink').addEventListener('click', ()=>{
+  if(hasBridge) window.AndroidBridge.shareApp();
+});
+document.getElementById('rateLink').addEventListener('click', ()=>{
+  if(hasBridge) window.AndroidBridge.rateApp();
+});
+document.getElementById('aboutLink').addEventListener('click', ()=>{
+  if(hasBridge) window.AndroidBridge.showAbout();
+});
+document.getElementById('privacyLink').addEventListener('click', ()=>{
+  if(hasBridge){ window.AndroidBridge.openPrivacyPolicy(); }
+  else { window.open('privacy_policy.html', '_blank'); }
+});
+if(hasBridge){
+  try{
+    document.getElementById('appVersionLine').textContent = 'v' + window.AndroidBridge.getAppVersion();
+  }catch(e){}
+}
+
+// ---------------------------------------------------------------------
+// Boot
+// ---------------------------------------------------------------------
+applyLanguage(loadStoredLanguage());
+
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+import java.util.Properties
+
+plugins {
+    id 'com.android.application'
+}
+
+// ---------------------------------------------------------------------
+// AdMob configuration loading.
+//
+// Real IDs live in a git-ignored "admob.properties" file at the project
+// root (copy admob-config.example -> admob.properties and edit it).
+// If that file is missing, we fall back to Google's official TEST ad
+// IDs so the project still builds and runs out of the box.
+// ---------------------------------------------------------------------
+def admobProps = new Properties()
+def admobPropsFile = rootProject.file('admob.properties')
+def admobExampleFile = rootProject.file('admob-config.example')
+if (admobPropsFile.exists()) {
+    admobProps.load(new FileInputStream(admobPropsFile))
+} else if (admobExampleFile.exists()) {
+    admobProps.load(new FileInputStream(admobExampleFile))
+}
+def admobAppId = admobProps.getProperty('ADMOB_APP_ID', 'ca-app-pub-3940256099942544~3347511713')
+def admobBannerId = admobProps.getProperty('ADMOB_BANNER_ID', 'ca-app-pub-3940256099942544/6300978111')
+
+// ---------------------------------------------------------------------
+// Release signing configuration.
+//
+// Real keystore credentials live in a git-ignored "keystore.properties"
+// file at the project root. If it is missing, the release build falls
+// back to being unsigned (Android Studio will prompt you to configure
+// signing, or you can sign the AAB manually before upload).
+// ---------------------------------------------------------------------
+def keystoreProps = new Properties()
+def keystorePropsFile = rootProject.file('keystore.properties')
+def hasKeystoreConfig = keystorePropsFile.exists()
+if (hasKeystoreConfig) {
+    keystoreProps.load(new FileInputStream(keystorePropsFile))
+}
+
+android {
+    namespace 'com.cmdtaj.kavach4assistant'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.cmdtaj.kavach4assistant"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        manifestPlaceholders = [admobAppId: admobAppId]
+        buildConfigField "String", "ADMOB_BANNER_ID", "\"${admobBannerId}\""
+    }
+
+    if (hasKeystoreConfig) {
+        signingConfigs {
+            release {
+                storeFile file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            applicationIdSuffix ".debug"
+        }
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasKeystoreConfig) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.core:core:1.13.1'
+    implementation 'androidx.activity:activity:1.9.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+    implementation 'com.google.android.gms:play-services-ads:23.3.0'
+    implementation 'com.google.android.material:material:1.12.0'
+}
