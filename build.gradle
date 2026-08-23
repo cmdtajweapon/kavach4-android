@@ -1,8 +1,6 @@
 import java.util.Properties
 
-plugins {
-    id 'com.android.application'
-}
+apply plugin: 'com.android.application'
 
 // ---------------------------------------------------------------------
 // AdMob configuration loading.
