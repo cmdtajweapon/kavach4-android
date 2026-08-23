@@ -1,0 +1,19 @@
+# AdMob configuration for KAVACH 4.0 Voice Assistant
+#
+# HOW TO USE:
+#   1. Copy this file to "admob.properties" in the project root
+#      (same folder as this file).
+#   2. Replace the two values below with your real AdMob IDs.
+#   3. admob.properties is git-ignored — it will never be committed,
+#      so your real IDs stay private. This example file (with
+#      Google's public TEST ids) is what gets committed instead.
+#
+# If admob.properties does not exist, the app automatically falls
+# back to Google's official TEST ad IDs shown below, so the project
+# always builds and runs, even before you've set up AdMob.
+
+# App-level ID from AdMob console -> Apps -> your app -> App settings
+ADMOB_APP_ID=ca-app-pub-3940256099942544~3347511713
+
+# Banner ad unit ID from AdMob console -> Apps -> your app -> Ad units
+ADMOB_BANNER_ID=ca-app-pub-3940256099942544/6300978111

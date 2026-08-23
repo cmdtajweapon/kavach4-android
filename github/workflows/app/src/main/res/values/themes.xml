@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Shown instantly on cold start, before MainActivity inflates its
+         real layout — this is the splash screen. -->
+    <style name="Theme.Kavach.Launch" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:statusBarColor">@color/kavach_void</item>
+        <item name="android:navigationBarColor">@color/kavach_void</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+
+    <!-- Applied once the real content view is set in MainActivity. -->
+    <style name="Theme.Kavach.Main" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/kavach_void</item>
+        <item name="android:statusBarColor">@color/kavach_void</item>
+        <item name="android:navigationBarColor">@color/kavach_panel</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+</resources>

@@ -1,0 +1,8 @@
+// Top-level build file for the KAVACH 4.0 Voice Assistant Android project.
+plugins {
+    id 'com.android.application' version '8.5.2' apply false
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

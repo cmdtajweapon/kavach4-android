@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/kavach_void"
+    android:fitsSystemWindows="true">
+
+    <!-- Main content: the KAVACH knowledge base app. This view alone
+         gets resized when the keyboard opens (adjustResize in the
+         manifest), so the ad banner below is pushed correctly rather
+         than being covered by the keyboard. -->
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/kavach_void" />
+
+    <!-- Thin separator so the ad is visually distinct from KAVACH
+         content and can never be mistaken for a warning/instruction. -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/kavach_hairline" />
+
+    <!-- AdMob banner container. Fixed height, bottom of screen, never
+         overlaps the WebView content or the microphone button above it.
+         If the ad fails to load, MainActivity sets this to GONE and the
+         app continues normally with the full-height WebView. -->
+    <FrameLayout
+        android:id="@+id/ad_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/kavach_panel"
+        android:gravity="center">
+
+        <com.google.android.gms.ads.AdView
+            android:id="@+id/ad_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            tools:ignore="MissingClass" />
+
+    </FrameLayout>
+
+</LinearLayout>
