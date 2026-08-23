@@ -13,7 +13,7 @@
 # always builds and runs, even before you've set up AdMob.
 
 # App-level ID from AdMob console -> Apps -> your app -> App settings
-ADMOB_APP_ID=ca-app-pub-3940256099942544~3347511713
+ADMOB_APP_ID=ca-app-pub-1665577481897072~7146627690
 
 # Banner ad unit ID from AdMob console -> Apps -> your app -> Ad units
-ADMOB_BANNER_ID=ca-app-pub-3940256099942544/6300978111
+ADMOB_BANNER_ID=ca-app-pub-1665577481897072/4964201969
